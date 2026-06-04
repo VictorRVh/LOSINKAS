@@ -12,7 +12,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['"Space Grotesk"', ...defaultTheme.fontFamily.sans],
+                sans: ['Space Grotesk', ...defaultTheme.fontFamily.sans],
             },
         },
     },

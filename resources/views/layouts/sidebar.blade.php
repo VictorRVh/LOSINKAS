@@ -22,6 +22,12 @@
             Usuarios
         </a>
 
+        <a href="{{ route('niveles.index') }}"
+            class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em]
+           {{ request()->routeIs('niveles') ? 'bg-[#008080] text-white' : 'hover:bg-[#008080] hover:text-white' }}">
+            Instituciones
+        </a>
+
         <a href="#"
             class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em] hover:bg-[#008080] hover:text-white">
             Exámenes

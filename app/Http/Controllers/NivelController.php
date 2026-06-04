@@ -24,7 +24,7 @@ class NivelController extends Controller
             ->paginate($request->integer('per_page', 15))
             ->withQueryString();
 
-        return view('dashboard', [
+        return view('niveles.nivel', [
             'niveles' => $niveles,
             'buscar' => $request->string('buscar'),
         ]);
