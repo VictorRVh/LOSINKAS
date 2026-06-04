@@ -15,64 +15,7 @@
 <div class="flex min-h-screen">
 
     <!-- SIDEBAR -->
-    <aside class="w-[260px] border-r-2 border-[#0A1718] bg-[#F5F5F5] flex flex-col">
-
-        <!-- LOGO -->
-        <div class="border-b-2 border-[#0A1718] p-5">
-            <h1 class="font-bold tracking-[0.2em] uppercase text-[#008080]">
-                INKASCAN / PANEL
-            </h1>
-        </div>
-
-        <!-- MENU -->
-        <nav class="flex-1 p-4 space-y-3">
-
-            <a href="{{ route('dashboard') }}"
-               class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em] hover:bg-[#008080] hover:text-white">
-                Dashboard
-            </a>
-
-            <a href="{{ route('usuarios') }}"
-               class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em] hover:bg-[#008080] hover:text-white">
-                Usuarios
-            </a>
-
-            <a href="#"
-               class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em] hover:bg-[#008080] hover:text-white">
-                Exámenes
-            </a>
-
-            <a href="#"
-               class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em] hover:bg-[#008080] hover:text-white">
-                Resultados
-            </a>
-
-        </nav>
-
-        <!-- USUARIO -->
-        <div class="border-t-2 border-[#0A1718] p-4">
-
-            <p class="font-semibold">
-                {{ Auth::user()->name }}
-            </p>
-
-            <p class="text-sm text-gray-500">
-                {{ Auth::user()->email }}
-            </p>
-
-            <form method="POST" action="{{ route('logout') }}" class="mt-4">
-                @csrf
-
-                <button
-                    type="submit"
-                    class="w-full border-2 border-[#0A1718] bg-white py-2 font-bold uppercase shadow-[4px_4px_0px_0px_rgba(10,23,24,1)]">
-                    Salir
-                </button>
-            </form>
-
-        </div>
-
-    </aside>
+    @include('layouts.sidebar')
 
     <!-- CONTENIDO -->
     <div class="flex-1 flex flex-col">
