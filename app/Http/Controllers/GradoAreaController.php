@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GradoArea;
+use App\Models\Nivel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,7 +14,7 @@ class GradoAreaController extends Controller
     {
         $gradoAreas = GradoArea::query()
             ->with(['nivel', 'cursos', 'examenes'])
-            ->when($request->filled('nivel_id'), fn ($query) => $query->where('nivel_id', $request->integer('nivel_id')))
+            ->when($request->filled('nivel_id'), fn($query) => $query->where('nivel_id', $request->integer('nivel_id')))
             ->when($request->filled('buscar'), function ($query) use ($request) {
                 $buscar = $request->string('buscar');
 
@@ -28,23 +29,22 @@ class GradoAreaController extends Controller
         return response()->json($gradoAreas);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'nivel_id' => ['required', 'integer', 'exists:niveles,id'],
-            'nombre_grado' => [
-                'required',
-                'string',
-                'max:80',
-                Rule::unique('grado_areas', 'nombre_grado')->where(fn ($query) => $query->where('nivel_id', $request->input('nivel_id'))),
-            ],
+            'nombre_grado' => ['required', 'string', 'max:80'],
             'descripcion' => ['nullable', 'string', 'max:255'],
-            'activo' => ['sometimes', 'boolean'],
+            'activo' => ['nullable', 'boolean'],
         ]);
 
-        $gradoArea = GradoArea::create($validated);
+        $validated['activo'] = $request->boolean('activo');
 
-        return response()->json($gradoArea->load(['nivel', 'cursos', 'examenes']), 201);
+        GradoArea::create($validated);
+
+        return redirect()
+            ->route('niveles.grado-areas', $validated['nivel_id'])
+            ->with('success', 'Grado creado correctamente');
     }
 
     public function show(GradoArea $gradoArea): JsonResponse
@@ -62,7 +62,7 @@ class GradoAreaController extends Controller
                 'max:80',
                 Rule::unique('grado_areas', 'nombre_grado')
                     ->ignore($gradoArea->id)
-                    ->where(fn ($query) => $query->where('nivel_id', $request->input('nivel_id', $gradoArea->nivel_id))),
+                    ->where(fn($query) => $query->where('nivel_id', $request->input('nivel_id', $gradoArea->nivel_id))),
             ],
             'descripcion' => ['nullable', 'string', 'max:255'],
             'activo' => ['sometimes', 'boolean'],
@@ -80,5 +80,14 @@ class GradoAreaController extends Controller
         return response()->json([
             'message' => 'Grado o area eliminado correctamente.',
         ]);
+    }
+
+    public function byNivel(Nivel $nivel)
+    {
+        $gradoAreas = GradoArea::where('nivel_id', $nivel->id)
+            ->with(['cursos', 'examenes'])
+            ->get();
+
+        return view('niveles.gradoAreas.gradosAreas', compact('nivel', 'gradoAreas'));
     }
 }

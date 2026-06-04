@@ -42,10 +42,11 @@
 
                             <div class="mt-4 flex gap-2">
 
-                                <a href="{{ route('niveles.show', $nivel) }}"
+                                <a href="{{ route('niveles.grado-areas', $nivel) }}"
                                    class="border-2 border-[#0A1718] px-2 py-1 text-[10px] uppercase font-bold hover:bg-[#0A1718] hover:text-white">
                                     Ver
                                 </a>
+
 
                                 <a href="{{ route('niveles.edit', $nivel) }}"
                                    class="border-2 border-[#0A1718] px-2 py-1 text-[10px] uppercase font-bold hover:bg-[#008080] hover:text-white">
