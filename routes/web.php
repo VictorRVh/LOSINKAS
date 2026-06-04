@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CursoController;
 use App\Http\Controllers\GradoAreaController;
 use App\Http\Controllers\NivelController;
 use App\Http\Controllers\ProfileController;
@@ -41,6 +42,19 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/grado-areas/{gradoArea}', [GradoAreaController::class, 'destroy'])
         ->name('grado-areas.destroy');
+
+    //CURSOS 
+    Route::get('/grado-areas/{gradoArea}/cursos', [CursoController::class, 'byGradoArea'])
+        ->name('grado-areas.cursos');
+
+    Route::post('/cursos', [CursoController::class, 'store'])
+        ->name('cursos.store');
+
+    Route::put('/cursos/{curso}', [CursoController::class, 'update'])
+        ->name('cursos.update');
+
+    Route::delete('/cursos/{curso}', [CursoController::class, 'destroy'])
+        ->name('cursos.destroy');
 
     // NIVELES
 

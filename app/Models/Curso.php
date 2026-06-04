@@ -15,6 +15,7 @@ class Curso extends Model
     protected $table = 'cursos';
 
     protected $fillable = [
+        'grado_area_id',
         'nombre_curso',
         'descripcion',
         'activo',

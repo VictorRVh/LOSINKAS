@@ -19,23 +19,25 @@ class CursoController extends Controller
         return response()->json($cursos);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'grado_area_id' => ['required', 'integer', 'exists:grado_areas,id'],
             'nombre_curso' => ['required', 'string', 'max:120'],
             'descripcion' => ['nullable', 'string', 'max:255'],
-            'activo' => ['sometimes', 'boolean'],
+            'activo' => ['nullable', 'boolean'],
         ]);
 
-        $gradoArea = GradoArea::findOrFail($validated['grado_area_id']);
-        unset($validated['grado_area_id']);
+        $curso = Curso::create([
+            'grado_area_id' => $validated['grado_area_id'],
+            'nombre_curso' => $validated['nombre_curso'],
+            'descripcion' => $validated['descripcion'] ?? null,
+            'activo' => $request->boolean('activo'),
+        ]);
 
-        $curso = new Curso($validated);
-        $curso->gradoArea()->associate($gradoArea);
-        $curso->save();
-
-        return response()->json($curso->load(['gradoArea', 'ajusteExamenes', 'cursoExamenes', 'grupo']), 201);
+        return redirect()
+            ->route('grado-areas.cursos', $curso->grado_area_id)
+            ->with('success', 'Curso creado correctamente');
     }
 
     public function show(Curso $curso): JsonResponse
@@ -43,32 +45,45 @@ class CursoController extends Controller
         return response()->json($curso->load(['gradoArea', 'ajusteExamenes', 'cursoExamenes', 'grupo']));
     }
 
-    public function update(Request $request, Curso $curso): JsonResponse
+    public function update(Request $request, Curso $curso)
     {
         $validated = $request->validate([
-            'grado_area_id' => ['sometimes', 'integer', 'exists:grado_areas,id'],
-            'nombre_curso' => ['sometimes', 'string', 'max:120'],
+            'nombre_curso' => ['required', 'string', 'max:120'],
             'descripcion' => ['nullable', 'string', 'max:255'],
-            'activo' => ['sometimes', 'boolean'],
+            'activo' => ['nullable', 'boolean'],
         ]);
 
-        if (isset($validated['grado_area_id'])) {
-            $curso->gradoArea()->associate(GradoArea::findOrFail($validated['grado_area_id']));
-            unset($validated['grado_area_id']);
-        }
+        $curso->update([
+            'nombre_curso' => $validated['nombre_curso'],
+            'descripcion' => $validated['descripcion'] ?? null,
+            'activo' => $request->boolean('activo'),
+        ]);
 
-        $curso->fill($validated);
-        $curso->save();
-
-        return response()->json($curso->load(['gradoArea', 'ajusteExamenes', 'cursoExamenes', 'grupo']));
+        return redirect()
+            ->route('grado-areas.cursos', $curso->grado_area_id)
+            ->with('success', 'Curso actualizado correctamente');
     }
 
-    public function destroy(Curso $curso): JsonResponse
+    public function destroy(Curso $curso)
     {
+        $gradoAreaId = $curso->grado_area_id;
+
         $curso->delete();
 
-        return response()->json([
-            'message' => 'Curso eliminado correctamente.',
-        ]);
+        return redirect()
+            ->route('grado-areas.cursos', $gradoAreaId)
+            ->with('success', 'Curso eliminado correctamente');
+    }
+
+    public function byGradoArea(GradoArea $gradoArea)
+    {
+        $cursos = Curso::where('grado_area_id', $gradoArea->id)
+            ->orderBy('nombre_curso')
+            ->get();
+
+        return view(
+            'niveles.gradoAreas.cursos.cursosview',
+            compact('gradoArea', 'cursos')
+        );
     }
 }

@@ -85,12 +85,13 @@
                             </p>
 
                             <div class="mt-5 flex gap-2">
-                                <x-ui.button
-                                    type="button"
-                                    color="orange"
-                                    x-on:click='editar(@json($grado))'>
-                                    Cursos
-                                </x-ui.button>
+                                <a href="{{ route('grado-areas.cursos', $grado) }}">
+                                    <x-ui.button
+                                        type="button"
+                                        color="orange">
+                                        Cursos
+                                    </x-ui.button>
+                                </a>
 
                                 <x-ui.button
                                     type="button"
