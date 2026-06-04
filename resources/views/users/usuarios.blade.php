@@ -15,17 +15,23 @@
                         [ TABLA / USERS ]
                     </p>
 
-
-                    <x-ui.button color="teal" class="px-3 py-1">
-                        <a href="#">
-                            Crear Usuario
-                        </a>
+                    <x-ui.button
+                        type="button"
+                        color="teal"
+                        class="px-3 py-1"
+                        x-data
+                        x-on:click="$dispatch('open-modal', 'create-user')">
+                        Crear Usuario
                     </x-ui.button>
-
-
                 </div>
 
                 <div class="overflow-x-auto">
+                    @if (session('status'))
+                    <div class="mb-4 border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 text-sm font-bold text-[#008080]">
+                        {{ session('status') }}
+                    </div>
+                    @endif
+
                     <table class="w-full border-collapse">
 
                         <thead>
@@ -91,6 +97,90 @@
                 </div>
 
             </section>
+
+            <x-ui.modal name="create-user" title="[ USERS / NUEVO ]" :show="$errors->any()">
+                <form
+                    x-data="{ saving: false }"
+                    x-on:submit="saving = true"
+                    class="space-y-5 p-5"
+                    method="POST"
+                    action="{{ route('users.store') }}">
+                    @csrf
+
+                    <div>
+                        <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
+                            Nombre
+                        </label>
+
+                        <input
+                            name="name"
+                            value="{{ old('name') }}"
+                            type="text"
+                            required
+                            class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
+
+                        @error('name')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
+                            Email
+                        </label>
+
+                        <input
+                            name="email"
+                            value="{{ old('email') }}"
+                            type="email"
+                            required
+                            class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
+
+                        @error('email')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
+                            Clave
+                        </label>
+
+                        <input
+                            name="password"
+                            type="password"
+                            required
+                            autocomplete="new-password"
+                            class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
+
+                        @error('password')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
+                            Confirmar clave
+                        </label>
+
+                        <input
+                            name="password_confirmation"
+                            type="password"
+                            required
+                            autocomplete="new-password"
+                            class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
+                    </div>
+
+                    <x-ui.button
+                        type="submit"
+                        color="teal"
+                        class="w-full disabled:translate-x-[4px] disabled:translate-y-[4px] disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none"
+                        x-bind:disabled="saving">
+                        <span x-show="!saving">Crear Usuario</span>
+                        <span x-show="saving" x-cloak>Guardando...</span>
+                    </x-ui.button>
+                </form>
+            </x-ui.modal>
 
         </div>
     </div>

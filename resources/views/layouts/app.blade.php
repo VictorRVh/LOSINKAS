@@ -14,9 +14,7 @@
 
 <div class="flex min-h-screen">
 
-    <!-- SIDEBAR -->
-    @include('layouts.sidebar')
-
+   @include('layouts.sidebar')
     <!-- CONTENIDO -->
     <div class="flex-1 flex flex-col">
 

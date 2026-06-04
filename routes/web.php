@@ -15,8 +15,8 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/usuarios', [UserController::class, 'index'])
-        ->name('usuarios');
+    Route::get('/usuarios', [UserController::class, 'index'])->name('users.index');
+    Route::post('/usuarios', [UserController::class, 'store'])->name('users.store');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
