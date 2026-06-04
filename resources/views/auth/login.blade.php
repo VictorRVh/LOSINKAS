@@ -2,46 +2,99 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <header class="fixed left-0 top-0 z-10 w-full border-b-2 border-[#0A1718] bg-[#FFFFFF]">
+        <div class="flex w-full items-center gap-4 px-4 py-3 lg:px-6">
+            <!-- <img
+                src="{{ asset('images/brand-logo.png') }}"
+                alt="InkaScan"
+                class="h-14 w-auto object-contain lg:h-16"> -->
+            
+                <img
+                src="{{ ('img/inkascan.jpeg') }}"
+                alt="InkaScan"
+                class="h-14 w-auto object-contain lg:h-16">
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <div class="border-l border-[#5C6F72]/30 pl-4">
+                <p class="font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.22em] text-[#008080]">
+                    Inkascan / Panel
+                </p>
+
+                <p class="mt-1 font-['Space_Grotesk',sans-serif] text-lg font-bold uppercase tracking-[-0.03em]">
+                    Control de Usuarios
+                </p>
+            </div>
         </div>
+    </header>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+    <main class="min-h-screen px-4 pb-10 pt-32 lg:px-8">
+        <div class="mx-auto w-full max-w-6xl">
+            <x-auth-session-status class="mb-4" :status="session('status')" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <section class="grid grid-cols-1 border-2 border-[#0A1718] bg-[#FFFFFF] lg:grid-cols-[1.05fr_0.95fr]">
+                <div class="border-b border-[#5C6F72]/30 px-6 py-10 lg:border-b-0 lg:border-r lg:px-8">
+                    <p class="font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.24em] text-[#008080]">
+                        Acceso local / inkascan
+                    </p>
+
+                    <h1 class="mt-4 max-w-[10ch] font-['Space_Grotesk',sans-serif] text-4xl font-bold uppercase leading-none tracking-[-0.05em] lg:text-6xl">
+                        Login tecnico de usuarios
+                    </h1>
+
+                    <p class="mt-6 max-w-xl border-l border-[#5C6F72]/30 pl-4 text-sm leading-7 text-[#0A1718]/80">
+                        Panel simple conectado a la base de datos <strong>inkascan</strong> sobre XAMPP.
+                    </p>
+                </div>
+
+                <div class="px-6 py-10 lg:px-8">
+                    <div class="border-2 border-[#0A1718] bg-[#F4F7F7] p-6">
+                        <p class="font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.2em] text-[#5C6F72]">
+                            [ AUTH / LOGIN ]
+                        </p>
+
+                        <form class="mt-6 space-y-5" method="POST" action="{{ route('login') }}">
+                            @csrf
+
+                            <div>
+                                <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
+                                    Email
+                                </label>
+
+                                <input
+                                    name="email"
+                                    value="{{ old('email') }}"
+                                    type="email"
+                                    class="w-full rounded-none border-2 border-[#0A1718] bg-[#FFFFFF] px-4 py-3 outline-none"
+                                    autocomplete="username">
+
+                                @error('email')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
+                                    Clave
+                                </label>
+
+                                <input
+                                    name="password"
+                                    type="password"
+                                    class="w-full rounded-none border-2 border-[#0A1718] bg-[#FFFFFF] px-4 py-3 outline-none"
+                                    autocomplete="current-password">
+
+                                @error('password')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <x-ui.button type="submit" color="coral" class="w-full">
+                                Ingresar al Panel
+                            </x-ui.button>
+                        </form>
+                    </div>
+                </div>
+            </section>
         </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
+    </main>
 </x-guest-layout>
