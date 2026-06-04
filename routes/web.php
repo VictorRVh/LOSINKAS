@@ -28,26 +28,27 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
-//GRADOS
-  //  Route::get('/grado-areas/{gradoArea}', [GradoAreaController::class, 'showGradoArea']);
-Route::get('/niveles/{nivel}/grado-areas', [GradoAreaController::class, 'byNivel'])
-    ->name('niveles.grado-areas');
+    //GRADOS
+    //  Route::get('/grado-areas/{gradoArea}', [GradoAreaController::class, 'showGradoArea']);
+    Route::get('/niveles/{nivel}/grado-areas', [GradoAreaController::class, 'byNivel'])
+        ->name('niveles.grado-areas');
 
-Route::post('/grado-areas', [GradoAreaController::class, 'store'])
-    ->name('grado-areas.store');
+    Route::post('/grado-areas', [GradoAreaController::class, 'store'])
+        ->name('grado-areas.store');
 
-Route::put('/grado-areas/{gradoArea}', [GradoAreaController::class, 'update'])
-    ->name('grado-areas.update');
+    Route::put('/grado-areas/{gradoArea}', [GradoAreaController::class, 'update'])
+        ->name('grado-areas.update');
 
-Route::delete('/grado-areas/{gradoArea}', [GradoAreaController::class, 'destroy'])
-    ->name('grado-areas.destroy');
+    Route::delete('/grado-areas/{gradoArea}', [GradoAreaController::class, 'destroy'])
+        ->name('grado-areas.destroy');
 
+    // NIVELES
 
-
-    // Route::post('/niveles', [NivelController::class, 'store'])->name('niveles.store');
-    // Route::get('/niveles', [NivelController::class, 'index'])->name('niveles.index');
-
-    Route::resource('niveles', NivelController::class);
+    Route::post('/niveles', [NivelController::class, 'store'])->name('niveles.store');
+    Route::get('/niveles', [NivelController::class, 'index'])->name('niveles.index');
+    Route::get('/niveles/{nivel}', [NivelController::class, 'show'])->name('niveles.show');
+    Route::patch('/niveles/{nivel}', [NivelController::class, 'update'])->name('niveles.update');
+    Route::delete('/niveles/{nivel}', [NivelController::class, 'destroy'])->name('niveles.destroy');
 });
 
 require __DIR__ . '/auth.php';

@@ -100,8 +100,53 @@
 
             <x-ui.modal name="create-user" title="[ USERS / NUEVO ]" :show="$errors->any()">
                 <form
-                    x-data="{ saving: false }"
-                    x-on:submit="saving = true"
+                    x-data="{
+                        saving: false,
+                        errors: {},
+
+                        validate() {
+                            this.errors = {}
+
+                            const name = this.$refs.name.value.trim()
+                            const email = this.$refs.email.value.trim()
+                            const password = this.$refs.password.value
+                            const passwordConfirmation = this.$refs.password_confirmation.value
+
+                            if (!name) {
+                                this.errors.name = 'El nombre es obligatorio.'
+                            }
+
+                            if (!email) {
+                                this.errors.email = 'El email es obligatorio.'
+                            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                                this.errors.email = 'Ingresa un email valido.'
+                            }
+
+                            if (!password) {
+                                this.errors.password = 'La clave es obligatoria.'
+                            } else if (password.length < 8) {
+                                this.errors.password = 'La clave debe tener al menos 8 caracteres.'
+                            }
+
+                            if (!passwordConfirmation) {
+                                this.errors.password_confirmation = 'Confirma la clave.'
+                            } else if (password !== passwordConfirmation) {
+                                this.errors.password_confirmation = 'Las claves no coinciden.'
+                            }
+
+                            return Object.keys(this.errors).length === 0
+                        },
+
+                        submit(event) {
+                            if (!this.validate()) {
+                                event.preventDefault()
+                                return
+                            }
+
+                            this.saving = true
+                        }
+                    }"
+                    x-on:submit="submit($event)"
                     class="space-y-5 p-5"
                     method="POST"
                     action="{{ route('users.store') }}">
@@ -113,11 +158,14 @@
                         </label>
 
                         <input
+                            x-ref="name"
+                            x-on:input="delete errors.name"
                             name="name"
                             value="{{ old('name') }}"
                             type="text"
-                            required
                             class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
+
+                        <p x-show="errors.name" x-text="errors.name" x-cloak class="mt-2 text-sm text-red-600"></p>
 
                         @error('name')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -130,11 +178,14 @@
                         </label>
 
                         <input
+                            x-ref="email"
+                            x-on:input="delete errors.email"
                             name="email"
                             value="{{ old('email') }}"
                             type="email"
-                            required
                             class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
+
+                        <p x-show="errors.email" x-text="errors.email" x-cloak class="mt-2 text-sm text-red-600"></p>
 
                         @error('email')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -147,11 +198,14 @@
                         </label>
 
                         <input
+                            x-ref="password"
+                            x-on:input="delete errors.password"
                             name="password"
                             type="password"
-                            required
                             autocomplete="new-password"
                             class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
+
+                        <p x-show="errors.password" x-text="errors.password" x-cloak class="mt-2 text-sm text-red-600"></p>
 
                         @error('password')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -164,11 +218,14 @@
                         </label>
 
                         <input
+                            x-ref="password_confirmation"
+                            x-on:input="delete errors.password_confirmation"
                             name="password_confirmation"
                             type="password"
-                            required
                             autocomplete="new-password"
                             class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
+
+                        <p x-show="errors.password_confirmation" x-text="errors.password_confirmation" x-cloak class="mt-2 text-sm text-red-600"></p>
                     </div>
 
                     <x-ui.button
@@ -177,7 +234,11 @@
                         class="w-full disabled:translate-x-[4px] disabled:translate-y-[4px] disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none"
                         x-bind:disabled="saving">
                         <span x-show="!saving">Crear Usuario</span>
-                        <span x-show="saving" x-cloak>Guardando...</span>
+
+                        <span x-show="saving" x-cloak class="inline-flex items-center justify-center gap-2">
+                            <span class="h-2 w-2 animate-pulse bg-white"></span>
+                            Guardando...
+                        </span>
                     </x-ui.button>
                 </form>
             </x-ui.modal>
