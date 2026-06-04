@@ -143,7 +143,6 @@ $isDarkModeManual = false;
                                     @else
                                     <x-heroicon-o-moon class="h-5 w-5" />
                                     @endif
-
                                 </button>
 
                                 @if (Route::has('login'))
