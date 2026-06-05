@@ -1,8 +1,8 @@
 @props([
-    'name',
-    'title' => '[ ELIMINAR ]',
-    'itemName',
-    'action',
+'name',
+'title' => '[ ELIMINAR ]',
+'itemName',
+'action',
 ])
 
 <x-ui.modal :name="$name" :title="$title">
@@ -26,7 +26,13 @@
                 Cancelar
             </button>
 
-            <form method="POST" action="{{ $action }}">
+            <form
+                method="POST"
+                action="{{ $action }}"
+                hx-post="{{ $action }}"
+                hx-target="#niveles-module"
+                hx-select="#niveles-module"
+                hx-swap="outerHTML">
                 @csrf
                 @method('DELETE')
 

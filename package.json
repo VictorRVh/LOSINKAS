@@ -15,5 +15,8 @@
         "laravel-vite-plugin": "^2.0.0",
         "postcss": "^8.4.31",
         "vite": "^7.0.7"
+    },
+    "dependencies": {
+        "htmx.org": "^2.0.10"
     }
 }

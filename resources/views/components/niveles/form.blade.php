@@ -1,8 +1,8 @@
 @props([
-    'nivel' => null,
-    'action',
-    'method' => 'POST',
-    'buttonText' => 'Guardar',
+'nivel' => null,
+'action',
+'method' => 'POST',
+'buttonText' => 'Guardar',
 ])
 
 <form
@@ -41,14 +41,19 @@
         }
     }"
     x-on:submit="submit($event)"
+    x-on:htmx:after-request="saving = false"
     class="space-y-5 p-5"
     method="POST"
     action="{{ $action }}"
->
+    hx-post="{{ $action }}"
+    hx-target="#niveles-module"
+    hx-select="#niveles-module"
+    hx-swap="outerHTML">
+
     @csrf
 
     @if ($method !== 'POST')
-        @method($method)
+    @method($method)
     @endif
 
     <div>
@@ -67,7 +72,7 @@
         <p x-show="errors.nombre_nivel" x-text="errors.nombre_nivel" x-cloak class="mt-2 text-sm text-red-600"></p>
 
         @error('nombre_nivel')
-            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
         @enderror
     </div>
 
@@ -86,7 +91,7 @@
         <p x-show="errors.descripcion" x-text="errors.descripcion" x-cloak class="mt-2 text-sm text-red-600"></p>
 
         @error('descripcion')
-            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
         @enderror
     </div>
 
@@ -96,7 +101,7 @@
             name="activo"
             value="1"
             @checked(old('activo', $nivel?->activo ?? true))
-            class="h-5 w-5 rounded-none border-2 border-[#0A1718] text-[#008080]">
+        class="h-5 w-5 rounded-none border-2 border-[#0A1718] text-[#008080]">
         Activo
     </label>
 
@@ -104,8 +109,7 @@
         type="submit"
         color="teal"
         class="w-full disabled:translate-x-[4px] disabled:translate-y-[4px] disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none"
-        x-bind:disabled="saving"
-    >
+        x-bind:disabled="saving">
         <span x-show="!saving">{{ $buttonText }}</span>
 
         <span x-show="saving" x-cloak class="inline-flex items-center justify-center gap-2">

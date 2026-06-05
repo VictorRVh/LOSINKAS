@@ -8,9 +8,10 @@ use Illuminate\Validation\Rule;
 
 class NivelController extends Controller
 {
-    public function index(Request $request)
+
+    private function getNiveles(Request $request)
     {
-        $niveles = Nivel::query()
+        return Nivel::query()
             ->with('gradoAreas')
             ->when($request->filled('buscar'), function ($query) use ($request) {
                 $buscar = $request->string('buscar');
@@ -23,9 +24,20 @@ class NivelController extends Controller
             ->orderBy('nombre_nivel')
             ->paginate($request->integer('per_page', 15))
             ->withQueryString();
+    }
 
+    private function htmxModule(Request $request)
+    {
+        return view('niveles.partials.module', [
+            'niveles' => $this->getNiveles($request),
+            'buscar' => $request->string('buscar'),
+        ]);
+    }
+
+    public function index(Request $request)
+    {
         return view('niveles.nivel', [
-            'niveles' => $niveles,
+            'niveles' => $this->getNiveles($request),
             'buscar' => $request->string('buscar'),
         ]);
     }
@@ -41,6 +53,12 @@ class NivelController extends Controller
         $validated['activo'] = $request->boolean('activo');
 
         Nivel::create($validated);
+
+        session()->flash('status', 'Nivel creado correctamente.');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request);
+        }
 
         return redirect()
             ->route('niveles.index')
@@ -80,14 +98,26 @@ class NivelController extends Controller
 
         $nivel->update($validated);
 
+        session()->flash('status', 'Nivel actualizado correctamente.');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request);
+        }
+
         return redirect()
             ->route('niveles.index')
             ->with('status', 'Nivel actualizado correctamente.');
     }
 
-    public function destroy(Nivel $nivel)
+    public function destroy(Request $request, Nivel $nivel)
     {
         $nivel->delete();
+
+        session()->flash('status', 'Nivel eliminado correctamente.');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request);
+        }
 
         return redirect()
             ->route('niveles.index')
