@@ -1,22 +1,23 @@
 <x-app-layout>
 
 
-
-    <x-slot name="header">
-        <!-- <h2 class="font-['Space_Grotesk',sans-serif] text-xl font-bold uppercase">
-            {{ $gradoArea->nombre_grado }}
-        </h2> -->
-        <x-slot name="breadcrumb">
-            <x-ui.breadcrumb
-                :items="[
+    <x-slot name="breadcrumb">
+        <x-ui.breadcrumb
+            :items="[
                 ['label' => 'Niveles', 'href' => route('niveles.index')],
                 ['label' => $gradoArea->nivel->nombre_nivel, 'href' => route('niveles.grado-areas', $gradoArea->nivel)],
                 ['label' => $gradoArea->nombre_grado],
             ]"
-                back-url="javascript:history.back()"
-                back-label="Volver" />
-        </x-slot>
+            back-url="javascript:history.back()"
+            back-label="Volver" />
     </x-slot>
+    <x-slot name="header">
+
+
+    </x-slot>
+    <h2 class="font-['Space_Grotesk',sans-serif] text-xl font-bold uppercase">
+        {{ $gradoArea->nombre_grado }}
+    </h2>
 
     <div x-data="{}" class="py-6">
 

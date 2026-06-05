@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GradoArea;
 use App\Models\Nivel;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
@@ -11,6 +12,17 @@ use Illuminate\View\View;
 
 class GradoAreaController extends Controller
 {
+
+
+    public function index(Request $request): JsonResponse
+    {
+        $gradoAreas = GradoArea::query()
+            ->with(['nivel', 'cursos'])
+            ->orderBy('nombre_grado')
+            ->paginate($request->integer('per_page', 15));
+
+        return response()->json($gradoAreas);
+    }
     public function byNivel(Nivel $nivel): View
     {
         $gradoAreas = GradoArea::query()
