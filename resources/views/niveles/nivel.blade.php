@@ -37,7 +37,7 @@
 
                 <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 lg:grid-cols-3">
                     @forelse ($niveles as $nivel)
-                    <div class="border-2 border-[#0A1718] bg-white p-4 transition hover:bg-[#F4F7F7]">
+                    <div class="border-2 border-[#0A1718] bg-white p-4 transition hover:-translate-y-1 hover:shadow-lg">
                         <div class="flex items-start justify-between gap-3">
                             <h3 class="font-bold uppercase tracking-wide">
                                 {{ $nivel->nombre_nivel }}

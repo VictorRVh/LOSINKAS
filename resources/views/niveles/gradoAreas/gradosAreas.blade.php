@@ -34,8 +34,7 @@
                 $dispatch('open-modal', 'grado-modal');
             }
         }"
-        class="py-6"
-    >
+        class="py-6">
 
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
@@ -48,174 +47,132 @@
                             [ GRADOS ]
                         </p>
 
-                        <p class="mt-1 text-sm">
+                        <!-- <p class="mt-1 text-sm">
                             Nivel: {{ $nivel->nombre_nivel }}
-                        </p>
+                        </p> -->
+
+                        <h3 class="mt-1 font-['Space_Grotesk',sans-serif] text-lg font-bold uppercase tracking-[-0.03em] text-[#0A1718]">
+                            Nivel: {{ $nivel->nombre_nivel }}
+                        </h3>
+
                     </div>
 
-                    <x-ui.button
+                    <button
                         type="button"
-                        color="teal"
-                        x-on:click="crear()">
-                        Crear Grado
-                    </x-ui.button>
+                        x-data
+                        x-on:click="$dispatch('open-modal', 'create-grado')"
+                        class="border-2 border-[#0A1718] bg-[#008080] px-4 py-2 font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.16em] text-white shadow-[4px_4px_0px_0px_rgba(10,23,24,1)] transition-transform active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">
+                        Agregar Grado
+                    </button>
 
                 </div>
 
-                <div class="grid grid-cols-1 gap-5 p-5 md:grid-cols-2 lg:grid-cols-3">
-
+                <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 lg:grid-cols-3">
                     @forelse($gradoAreas as $grado)
+                    <div class="border-2 border-[#0A1718] bg-white p-4 transition hover:bg-[#F4F7F7]">
+                        <div class="flex items-start justify-between gap-3">
+                            <h3 class="font-bold uppercase tracking-wide">
+                                {{ $grado->nombre_grado }}
+                            </h3>
 
-                        <div class="border-2 border-[#0A1718] bg-white p-5 transition hover:-translate-y-1 hover:shadow-lg">
+                            <span class="border border-[#5C6F72] px-2 py-1 text-[10px] uppercase">
+                                {{ $grado->activo ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </div>
 
-                            <div class="flex items-start justify-between">
+                        <p class="mt-2 min-h-[40px] text-sm text-[#5C6F72]">
+                            {{ $grado->descripcion ?: 'Sin descripcion' }}
+                        </p>
 
-                                <h3 class="font-['Space_Grotesk',sans-serif] text-lg font-bold uppercase">
-                                    {{ $grado->nombre_grado }}
-                                </h3>
+                        <div class="mt-3 text-xs uppercase tracking-wider text-[#5C6F72]">
+                            Cursos: {{ $grado->cursos_count ?? $grado->cursos->count() ?? 0 }}
+                        </div>
 
-                                <span class="border border-[#0A1718] px-2 py-1 text-[10px] font-bold uppercase">
-                                    {{ $grado->activo ? 'Activo' : 'Inactivo' }}
-                                </span>
-
-                            </div>
-
-                            <p class="mt-3 min-h-[60px] text-sm text-[#5C6F72]">
-                                {{ $grado->descripcion ?: 'Sin descripción' }}
-                            </p>
-
-                            <div class="mt-5 flex gap-2">
-                                <a href="{{ route('grado-areas.cursos', $grado) }}">
-                                    <x-ui.button
-                                        type="button"
-                                        color="orange">
-                                        Cursos
-                                    </x-ui.button>
-                                </a>
-
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <a href="{{ route('grado-areas.cursos', $grado) }}">
                                 <x-ui.button
                                     type="button"
-                                    color="teal"
-                                    x-on:click='editar(@json($grado))'>
-                                    Editar
+                                    color="orange">
+                                    Cursos
                                 </x-ui.button>
+                            </a>
 
-                                <form
-                                    action="{{ route('grado-areas.destroy', $grado) }}"
-                                    method="POST">
+                            <button
+                                type="button"
+                                x-data
+                                x-on:click="$dispatch('open-modal', 'edit-grado-{{ $grado->id }}')"
+                                class="border-2 border-[#0A1718] px-2 py-1 text-[10px] font-bold uppercase hover:bg-[#008080] hover:text-white">
+                                Editar
+                            </button>
 
+                            <button
+                                type="button"
+                                x-data
+                                x-on:click="$dispatch('open-modal', 'delete-grado-{{ $grado->id }}')"
+                                class="border-2 border-[#0A1718] px-2 py-1 text-[10px] font-bold uppercase hover:bg-red-500 hover:text-white">
+                                Borrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <x-ui.modal name="edit-grado-{{ $grado->id }}" title="[ GRADOS / EDITAR ]">
+                        <x-grado-areas.form
+                            :grado="$grado"
+                            :action="route('grado-areas.update', $grado)"
+                            method="PATCH"
+                            button-text="Guardar Cambios" />
+                    </x-ui.modal>
+
+                    <x-ui.modal name="delete-grado-{{ $grado->id }}" title="[ GRADOS / ELIMINAR ]">
+                        <div class="space-y-5 p-5">
+                            <div class="border-2 border-[#0A1718] bg-[#F4F7F7] p-4">
+                                <p class="font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#FF7F50]">
+                                    Accion irreversible
+                                </p>
+
+                                <p class="mt-3 text-sm leading-6 text-[#0A1718]/80">
+                                    Estas seguro de que deseas eliminar el grado
+                                    <strong>{{ $grado->nombre_grado }}</strong>?
+                                </p>
+                            </div>
+
+                            <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                                <button
+                                    type="button"
+                                    x-data
+                                    x-on:click="$dispatch('close-modal', 'delete-grado-{{ $grado->id }}')"
+                                    class="border-2 border-[#0A1718] bg-white px-4 py-2 font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.14em]">
+                                    Cancelar
+                                </button>
+
+                                <form method="POST" action="{{ route('grado-areas.destroy', $grado) }}">
                                     @csrf
                                     @method('DELETE')
 
-                                    <x-ui.button
+                                    <button
                                         type="submit"
-                                        color="orange"
-                                        onclick="return confirm('¿Eliminar este grado?')">
-                                        Eliminar
-                                    </x-ui.button>
-
+                                        class="w-full border-2 border-[#0A1718] bg-red-500 px-4 py-2 font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[4px_4px_0px_0px_rgba(10,23,24,1)] sm:w-auto">
+                                        Si, eliminar
+                                    </button>
                                 </form>
-
                             </div>
-
                         </div>
-
+                    </x-ui.modal>
                     @empty
-
-                        <div class="col-span-full py-10 text-center">
-                            No existen grados registrados.
-                        </div>
-
+                    <div class="border-2 border-[#0A1718] bg-[#F4F7F7] p-5 text-sm text-[#5C6F72] sm:col-span-2 lg:col-span-3">
+                        No existen grados registrados.
+                    </div>
                     @endforelse
-
                 </div>
-
             </section>
-
         </div>
 
-        {{-- MODAL CREAR / EDITAR --}}
-
-        <x-ui.modal
-            name="grado-modal"
-            title="[ GRADO ]">
-
-            <form
-                method="POST"
-                class="space-y-5 p-5"
-                :action="editando
-                    ? `/grado-areas/${gradoId}`
-                    : '{{ route('grado-areas.store') }}'">
-
-                @csrf
-
-                <template x-if="editando">
-                    <input
-                        type="hidden"
-                        name="_method"
-                        value="PUT">
-                </template>
-
-                <input
-                    type="hidden"
-                    name="nivel_id"
-                    value="{{ $nivel->id }}">
-
-                <div>
-
-                    <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
-                        Nombre del grado
-                    </label>
-
-                    <input
-                        x-model="nombre"
-                        name="nombre_grado"
-                        type="text"
-                        class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none"
-                        required>
-
-                </div>
-
-                <div>
-
-                    <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
-                        Descripción
-                    </label>
-
-                    <textarea
-                        x-model="descripcion"
-                        name="descripcion"
-                        rows="3"
-                        class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none"></textarea>
-
-                </div>
-
-                <label class="flex items-center gap-3 font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
-
-                    <input
-                        x-model="activo"
-                        type="checkbox"
-                        name="activo"
-                        value="1"
-                        class="h-5 w-5 rounded-none border-2 border-[#0A1718]">
-
-                    Activo
-
-                </label>
-
-                <x-ui.button
-                    type="submit"
-                    color="teal"
-                    class="w-full">
-
-                    <span x-text="editando ? 'Actualizar Grado' : 'Crear Grado'"></span>
-
-                </x-ui.button>
-
-            </form>
-
-        </x-ui.modal>
-
     </div>
+
+    <x-ui.modal name="create-grado" title="[ GRADOS / NUEVO ]" :show="$errors->any()">
+        <x-grado-areas.form
+            :action="route('niveles.grado-areas.store', $nivel)"
+            button-text="Crear Grado" />
+    </x-ui.modal>
 
 </x-app-layout>
