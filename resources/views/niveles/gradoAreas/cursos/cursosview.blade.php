@@ -6,36 +6,7 @@
         </h2>
     </x-slot>
 
-    <div
-        x-data="{
-            editando: false,
-            cursoId: null,
-            nombre: '',
-            descripcion: '',
-            activo: true,
-
-            crear() {
-                this.editando = false;
-                this.cursoId = null;
-                this.nombre = '';
-                this.descripcion = '';
-                this.activo = true;
-
-                $dispatch('open-modal', 'curso-modal');
-            },
-
-            editar(curso) {
-                this.editando = true;
-                this.cursoId = curso.id;
-                this.nombre = curso.nombre_curso;
-                this.descripcion = curso.descripcion ?? '';
-                this.activo = Boolean(curso.activo);
-
-                $dispatch('open-modal', 'curso-modal');
-            }
-        }"
-        class="py-6"
-    >
+    <div x-data="{}" class="py-6">
 
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
@@ -56,7 +27,7 @@
                     <x-ui.button
                         type="button"
                         color="teal"
-                        x-on:click="crear()">
+                        x-on:click="$dispatch('open-modal', 'create-curso')">
                         Crear Curso
                     </x-ui.button>
 
@@ -86,28 +57,17 @@
 
                             <div class="mt-5 flex gap-2">
 
-                                <x-ui.button
-                                    type="button"
-                                    color="teal"
-                                    x-on:click='editar(@json($curso))'>
+                                <x-ui.action-button                    
+                                    x-on:click="$dispatch('open-modal', 'edit-curso-{{ $curso->id }}')"
+                                    color="outline">
                                     Editar
-                                </x-ui.button>
+                                </x-ui.action-button>
 
-                                <form
-                                    action="{{ route('cursos.destroy', $curso) }}"
-                                    method="POST">
-
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <x-ui.button
-                                        type="submit"
-                                        color="orange"
-                                        onclick="return confirm('¿Eliminar este curso?')">
-                                        Eliminar
-                                    </x-ui.button>
-
-                                </form>
+                                <x-ui.action-button
+                                    x-on:click="$dispatch('open-modal', 'delete-curso-{{ $curso->id }}')"
+                                    color="coral">
+                                    Eliminar
+                                </x-ui.action-button>
 
                             </div>
 
@@ -127,86 +87,23 @@
 
         </div>
 
-        {{-- MODAL CREAR / EDITAR CURSO --}}
-
-        <x-ui.modal
-            name="curso-modal"
-            title="[ CURSO ]">
-
-            <form
-                method="POST"
-                class="space-y-5 p-5"
-                :action="editando
-                    ? `/cursos/${cursoId}`
-                    : '{{ route('cursos.store') }}'">
-
-                @csrf
-
-                <template x-if="editando">
-                    <input
-                        type="hidden"
-                        name="_method"
-                        value="PUT">
-                </template>
-
-                <input
-                    type="hidden"
-                    name="grado_area_id"
-                    value="{{ $gradoArea->id }}">
-
-                <div>
-
-                    <label class="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
-                        Nombre del Curso
-                    </label>
-
-                    <input
-                        x-model="nombre"
-                        name="nombre_curso"
-                        type="text"
-                        class="w-full border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3"
-                        required>
-
-                </div>
-
-                <div>
-
-                    <label class="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
-                        Descripción
-                    </label>
-
-                    <textarea
-                        x-model="descripcion"
-                        name="descripcion"
-                        rows="3"
-                        class="w-full border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3"></textarea>
-
-                </div>
-
-                <label class="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">
-
-                    <input
-                        x-model="activo"
-                        type="checkbox"
-                        name="activo"
-                        value="1">
-
-                    Activo
-
-                </label>
-
-                <x-ui.button
-                    type="submit"
-                    color="teal"
-                    class="w-full">
-
-                    <span x-text="editando ? 'Actualizar Curso' : 'Crear Curso'"></span>
-
-                </x-ui.button>
-
-            </form>
-
+        {{-- MODAL CREAR CURSO --}}
+        <x-ui.modal name="create-curso" title="[ CURSO / NUEVO ]" :show="$errors->any()">
+            <x-cursos.form :action="route('cursos.store')" :grado-area="$gradoArea" button-text="Crear Curso" />
         </x-ui.modal>
+
+        {{-- MODALES EDITAR POR CURSO --}}
+        @foreach($cursos as $curso)
+            <x-ui.modal name="edit-curso-{{ $curso->id }}" title="[ CURSO / EDITAR ]">
+                <x-cursos.form :curso="$curso" :action="route('cursos.update', $curso)" method="PUT" button-text="Guardar Cambios" />
+            </x-ui.modal>
+
+            <x-ui.delete-modal
+                name="delete-curso-{{ $curso->id }}"
+                title="[ CURSO / ELIMINAR ]"
+                :item-name="$curso->nombre_curso"
+                :action="route('cursos.destroy', $curso)" />
+        @endforeach
 
     </div>
 

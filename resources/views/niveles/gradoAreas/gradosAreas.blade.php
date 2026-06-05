@@ -89,29 +89,23 @@
                         </div>
 
                         <div class="mt-4 flex flex-wrap gap-2">
-                            <a href="{{ route('grado-areas.cursos', $grado) }}">
-                                <x-ui.button
+                                <x-ui.action-button href="{{ route('grado-areas.cursos', $grado) }}">Cursos</x-ui.action-button>
+
+                                <x-ui.action-button
                                     type="button"
-                                    color="orange">
-                                    Cursos
-                                </x-ui.button>
-                            </a>
+                                    x-data
+                                    x-on:click="$dispatch('open-modal', 'edit-grado-{{ $grado->id }}')"
+                                    color="outline">
+                                    Editar
+                                </x-ui.action-button>
 
-                            <button
-                                type="button"
-                                x-data
-                                x-on:click="$dispatch('open-modal', 'edit-grado-{{ $grado->id }}')"
-                                class="border-2 border-[#0A1718] px-2 py-1 text-[10px] font-bold uppercase hover:bg-[#008080] hover:text-white">
-                                Editar
-                            </button>
-
-                            <button
-                                type="button"
-                                x-data
-                                x-on:click="$dispatch('open-modal', 'delete-grado-{{ $grado->id }}')"
-                                class="border-2 border-[#0A1718] px-2 py-1 text-[10px] font-bold uppercase hover:bg-red-500 hover:text-white">
-                                Borrar
-                            </button>
+                                <x-ui.action-button
+                                    type="button"
+                                    x-data
+                                    x-on:click="$dispatch('open-modal', 'delete-grado-{{ $grado->id }}')"
+                                    color="coral">
+                                    Borrar
+                                </x-ui.action-button>
                         </div>
                     </div>
 
@@ -123,41 +117,11 @@
                             button-text="Guardar Cambios" />
                     </x-ui.modal>
 
-                    <x-ui.modal name="delete-grado-{{ $grado->id }}" title="[ GRADOS / ELIMINAR ]">
-                        <div class="space-y-5 p-5">
-                            <div class="border-2 border-[#0A1718] bg-[#F4F7F7] p-4">
-                                <p class="font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#FF7F50]">
-                                    Accion irreversible
-                                </p>
-
-                                <p class="mt-3 text-sm leading-6 text-[#0A1718]/80">
-                                    Estas seguro de que deseas eliminar el grado
-                                    <strong>{{ $grado->nombre_grado }}</strong>?
-                                </p>
-                            </div>
-
-                            <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                                <button
-                                    type="button"
-                                    x-data
-                                    x-on:click="$dispatch('close-modal', 'delete-grado-{{ $grado->id }}')"
-                                    class="border-2 border-[#0A1718] bg-white px-4 py-2 font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.14em]">
-                                    Cancelar
-                                </button>
-
-                                <form method="POST" action="{{ route('grado-areas.destroy', $grado) }}">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button
-                                        type="submit"
-                                        class="w-full border-2 border-[#0A1718] bg-red-500 px-4 py-2 font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[4px_4px_0px_0px_rgba(10,23,24,1)] sm:w-auto">
-                                        Si, eliminar
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </x-ui.modal>
+                    <x-ui.delete-modal
+                        name="delete-grado-{{ $grado->id }}"
+                        title="[ GRADOS / ELIMINAR ]"
+                        :item-name="$grado->nombre_grado"
+                        :action="route('grado-areas.destroy', $grado)" />
                     @empty
                     <div class="border-2 border-[#0A1718] bg-[#F4F7F7] p-5 text-sm text-[#5C6F72] sm:col-span-2 lg:col-span-3">
                         No existen grados registrados.
