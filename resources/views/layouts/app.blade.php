@@ -23,6 +23,8 @@
 
             <div class="px-6 py-5">
 
+                {{ $breadcrumb ?? '' }}
+
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-[#008080]">
                     MÓDULO ACTIVO
                 </p>

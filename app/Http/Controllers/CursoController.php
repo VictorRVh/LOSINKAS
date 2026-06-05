@@ -77,6 +77,8 @@ class CursoController extends Controller
 
     public function byGradoArea(GradoArea $gradoArea)
     {
+        $gradoArea->load('nivel');
+
         $cursos = Curso::where('grado_area_id', $gradoArea->id)
             ->orderBy('nombre_curso')
             ->get();
