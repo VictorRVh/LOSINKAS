@@ -57,15 +57,18 @@
                         </div>
 
                         <div class="mt-4 flex flex-wrap gap-2">
-                            <x-ui.action-button href="{{ route('niveles.grado-areas', $nivel) }}" class="">Ver</x-ui.action-button>
+                            <a href="{{ route('niveles.grado-areas', $nivel) }}"
+                                class="border-2 border-[#0A1718] px-2 py-1 text-[10px] uppercase font-bold hover:bg-[#0A1718] hover:text-white">
+                                Ver
+                            </a>
 
-                            <x-ui.action-button
+                            <button
                                 type="button"
                                 x-data
                                 x-on:click="$dispatch('open-modal', 'edit-nivel-{{ $nivel->id }}')"
-                                color="outline">
+                                class="border-2 border-[#0A1718] px-2 py-1 text-[10px] font-bold uppercase hover:bg-[#008080] hover:text-white">
                                 Editar
-                            </x-ui.action-button>
+                            </button>
 
                             <form
                                 action="{{ route('niveles.destroy', $nivel) }}"
@@ -74,13 +77,13 @@
                                 @csrf
                                 @method('DELETE')
 
-                                <x-ui.action-button
+                                <button
                                     type="button"
                                     x-data
                                     x-on:click="$dispatch('open-modal', 'delete-nivel-{{ $nivel->id }}')"
-                                    color="coral">
+                                    class="border-2 border-[#0A1718] px-2 py-1 text-[10px] font-bold uppercase hover:bg-red-500 hover:text-white">
                                     Borrar
-                                </x-ui.action-button>
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -93,11 +96,41 @@
                             button-text="Guardar Cambios" />
                     </x-ui.modal>
 
-                    <x-ui.delete-modal
-                        name="delete-nivel-{{ $nivel->id }}"
-                        title="[ NIVELES / ELIMINAR ]"
-                        :item-name="$nivel->nombre_nivel"
-                        :action="route('niveles.destroy', $nivel)" />
+                    <x-ui.modal name="delete-nivel-{{ $nivel->id }}" title="[ NIVELES / ELIMINAR ]">
+                        <div class="space-y-5 p-5">
+                            <div class="border-2 border-[#0A1718] bg-[#F4F7F7] p-4">
+                                <p class="font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#FF7F50]">
+                                    Accion irreversible
+                                </p>
+
+                                <p class="mt-3 text-sm leading-6 text-[#0A1718]/80">
+                                    Estas seguro de que deseas eliminar el nivel
+                                    <strong>{{ $nivel->nombre_nivel }}</strong>?
+                                </p>
+                            </div>
+
+                            <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                                <button
+                                    type="button"
+                                    x-data
+                                    x-on:click="$dispatch('close-modal', 'delete-nivel-{{ $nivel->id }}')"
+                                    class="border-2 border-[#0A1718] bg-white px-4 py-2 font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.14em]">
+                                    Cancelar
+                                </button>
+
+                                <form method="POST" action="{{ route('niveles.destroy', $nivel) }}">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button
+                                        type="submit"
+                                        class="w-full border-2 border-[#0A1718] bg-red-500 px-4 py-2 font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[4px_4px_0px_0px_rgba(10,23,24,1)] sm:w-auto">
+                                        Si, eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </x-ui.modal>
 
                     @empty
                     <div class="border-2 border-[#0A1718] bg-[#F4F7F7] p-5 text-sm text-[#5C6F72] sm:col-span-2 lg:col-span-3">
