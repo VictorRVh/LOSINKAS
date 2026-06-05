@@ -14,14 +14,20 @@
     ];
 
     $classes = 'rounded-none border-2 border-[#0A1718] px-4 py-2 font-[\'Space_Grotesk\',sans-serif] text-sm font-bold uppercase tracking-[0.12em] shadow-[4px_4px_0px_0px_rgba(10,23,24,1)] transition-transform active:translate-x-[4px] active:translate-y-[4px] active:shadow-none ' . ($colors[$color] ?? $colors['white']);
+
+    $needsXData = !$attributes->has('x-data');
+    $attrBag = $attributes->merge(['class' => $classes]);
+    if ($needsXData) {
+        $attrBag = $attrBag->merge(['x-data' => '']);
+    }
 @endphp
 
 @if ($href)
-    <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
+    <a href="{{ $href }}" {{ $attrBag }}>
         {{ $slot }}
     </a>
 @else
-    <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>
+    <button type="{{ $type }}" {{ $attrBag }}>
         {{ $slot }}
     </button>
 @endif

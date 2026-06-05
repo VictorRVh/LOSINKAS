@@ -121,6 +121,8 @@
 
     </x-ui.modal>
 
+    
+
     @foreach($gradoAreas as $grado)
 
     <x-ui.modal
