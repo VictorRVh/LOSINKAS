@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\GradoAreaController;
+use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\NivelController;
+use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -62,6 +64,30 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/cursos/{curso}', [CursoController::class, 'destroy'])
         ->name('cursos.destroy');
+
+    Route::get('/grupos', [GrupoController::class, 'index'])
+        ->name('grupos.index');
+
+    Route::post('/grupos', [GrupoController::class, 'store'])
+        ->name('grupos.store');
+
+    Route::put('/grupos/{grupo}', [GrupoController::class, 'update'])
+        ->name('grupos.update');
+
+    Route::delete('/grupos/{grupo}', [GrupoController::class, 'destroy'])
+        ->name('grupos.destroy');
+
+    Route::get('/periodos', [PeriodoController::class, 'index'])
+        ->name('periodos.index');
+
+    Route::post('/periodos', [PeriodoController::class, 'store'])
+        ->name('periodos.store');
+
+    Route::put('/periodos/{periodo}', [PeriodoController::class, 'update'])
+        ->name('periodos.update');
+
+    Route::delete('/periodos/{periodo}', [PeriodoController::class, 'destroy'])
+        ->name('periodos.destroy');
 });
 
 require __DIR__ . '/auth.php';

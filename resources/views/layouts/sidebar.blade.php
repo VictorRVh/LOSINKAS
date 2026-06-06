@@ -10,11 +10,11 @@
     {{-- MENU --}}
     <nav class="flex-1 p-4 space-y-3">
 
-        <a href="{{ route('dashboard') }}"
+        <!-- <a href="{{ route('dashboard') }}"
             class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em]
            {{ request()->routeIs('dashboard') ? 'bg-[#008080] text-white' : 'hover:bg-[#008080] hover:text-white' }}">
             Dashboard
-        </a>
+        </a> -->
 
         <a href="{{ route('users.index') }}"
             class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em]
@@ -28,7 +28,7 @@
             Instituciones
         </a>
 
-        <a href="#"
+        <!-- <a href="#"
             class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em] hover:bg-[#008080] hover:text-white">
             Exámenes
         </a>
@@ -36,6 +36,18 @@
         <a href="#"
             class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em] hover:bg-[#008080] hover:text-white">
             Resultados
+        </a> -->
+
+        <a href="{{ route('grupos.index') }}"
+            class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em]
+           {{ request()->routeIs('grupos.index') ? 'bg-[#008080] text-white' : 'hover:bg-[#008080] hover:text-white' }}">
+            Grupos
+        </a>
+
+        <a href="{{ route('periodos.index') }}"
+            class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em]
+           {{ request()->routeIs('periodos.index') ? 'bg-[#008080] text-white' : 'hover:bg-[#008080] hover:text-white' }}">
+            Periodos
         </a>
 
     </nav>
