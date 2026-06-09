@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('examen_id')->constrained('examenes')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('curso_id')->constrained('cursos')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('curso_id')->constrained('cursos')->cascadeOnUpdate()->cascadeOnDelete();
             // $table->foreignId('ajuste_examen_id')->nullable()->constrained('ajuste_examenes')->cascadeOnUpdate()->nullOnDelete();
 
             $table->timestamps();

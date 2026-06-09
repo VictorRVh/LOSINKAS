@@ -94,7 +94,8 @@
                         name="delete-nivel-{{ $nivel->id }}"
                         title="[ NIVELES / ELIMINAR ]"
                         :item-name="$nivel->nombre_nivel"
-                        :action="route('niveles.destroy', $nivel)" />
+                        :action="route('niveles.destroy', $nivel)"
+                        target="#niveles-module" />
 
                     @empty
                     <div class="border-2 border-[#0A1718] bg-[#F4F7F7] p-5 text-sm text-[#5C6F72] sm:col-span-2 lg:col-span-3">

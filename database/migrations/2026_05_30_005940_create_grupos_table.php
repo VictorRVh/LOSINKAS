@@ -18,9 +18,10 @@ return new class extends Migration
             // $table->string('codigo_qr', 120)->nullable()->unique();
             $table->boolean('activo')->default(true);
 
-            $table->foreignId('periodo_id')->constrained('periodos')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('curso_id')->constrained('cursos')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('seccion_id')->constrained('secciones')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('periodo_id')->constrained('periodos')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('curso_id')->constrained('cursos')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('seccion_id')->constrained('secciones')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('grado_id')->constrained('grado_areas')->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->timestamps();
         });

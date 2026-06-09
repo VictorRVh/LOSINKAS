@@ -59,7 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/cursos', [CursoController::class, 'store'])
         ->name('cursos.store');
 
-    Route::put('/cursos/{curso}', [CursoController::class, 'update'])
+    Route::patch('/cursos/{curso}', [CursoController::class, 'update'])
         ->name('cursos.update');
 
     Route::delete('/cursos/{curso}', [CursoController::class, 'destroy'])
@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/grupos', [GrupoController::class, 'store'])
         ->name('grupos.store');
 
-    Route::put('/grupos/{grupo}', [GrupoController::class, 'update'])
+    Route::patch('/grupos/{grupo}', [GrupoController::class, 'update'])
         ->name('grupos.update');
 
     Route::delete('/grupos/{grupo}', [GrupoController::class, 'destroy'])
@@ -83,7 +83,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/periodos', [PeriodoController::class, 'store'])
         ->name('periodos.store');
 
-    Route::put('/periodos/{periodo}', [PeriodoController::class, 'update'])
+    Route::patch('/periodos/{periodo}', [PeriodoController::class, 'update'])
         ->name('periodos.update');
 
     Route::delete('/periodos/{periodo}', [PeriodoController::class, 'destroy'])

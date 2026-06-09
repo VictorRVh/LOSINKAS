@@ -6,6 +6,8 @@ use App\Models\Curso;
 use App\Models\GradoArea;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CursoController extends Controller
 {
@@ -19,7 +21,21 @@ class CursoController extends Controller
         return response()->json($cursos);
     }
 
-    public function store(Request $request)
+    public function byGradoArea(Request $request, GradoArea $gradoArea): View
+    {
+        $gradoArea->load('nivel');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $gradoArea);
+        }
+
+        return view('niveles.gradoAreas.cursos.cursos', [
+            'gradoArea' => $gradoArea,
+            'cursos' => $this->getCursos($request, $gradoArea),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse|View
     {
         $validated = $request->validate([
             'grado_area_id' => ['required', 'integer', 'exists:grado_areas,id'],
@@ -35,6 +51,14 @@ class CursoController extends Controller
             'activo' => $request->boolean('activo'),
         ]);
 
+        $gradoArea = GradoArea::with('nivel')->findOrFail($curso->grado_area_id);
+
+        session()->flash('success', 'Curso creado correctamente');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $gradoArea);
+        }
+
         return redirect()
             ->route('grado-areas.cursos', $curso->grado_area_id)
             ->with('success', 'Curso creado correctamente');
@@ -45,7 +69,7 @@ class CursoController extends Controller
         return response()->json($curso->load(['gradoArea', 'ajusteExamenes', 'cursoExamenes', 'grupo']));
     }
 
-    public function update(Request $request, Curso $curso)
+    public function update(Request $request, Curso $curso): RedirectResponse|View
     {
         $validated = $request->validate([
             'nombre_curso' => ['required', 'string', 'max:120'],
@@ -59,33 +83,61 @@ class CursoController extends Controller
             'activo' => $request->boolean('activo'),
         ]);
 
+        $gradoArea = GradoArea::with('nivel')->findOrFail($curso->grado_area_id);
+
+        session()->flash('success', 'Curso actualizado correctamente');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $gradoArea);
+        }
+
         return redirect()
             ->route('grado-areas.cursos', $curso->grado_area_id)
             ->with('success', 'Curso actualizado correctamente');
     }
 
-    public function destroy(Curso $curso)
+    public function destroy(Request $request, Curso $curso): RedirectResponse|View
     {
-        $gradoAreaId = $curso->grado_area_id;
+        $gradoArea = GradoArea::with('nivel')->findOrFail($curso->grado_area_id);
 
         $curso->delete();
 
+        session()->flash('success', 'Curso eliminado correctamente');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $gradoArea);
+        }
+
         return redirect()
-            ->route('grado-areas.cursos', $gradoAreaId)
+            ->route('grado-areas.cursos', $gradoArea)
             ->with('success', 'Curso eliminado correctamente');
     }
 
-    public function byGradoArea(GradoArea $gradoArea)
+    private function getCursos(Request $request, GradoArea $gradoArea)
+    {
+        return Curso::query()
+            ->where('grado_area_id', $gradoArea->id)
+            ->when($request->filled('buscar'), function ($query) use ($request) {
+                $buscar = $request->string('buscar');
+
+                $query->where(function ($query) use ($buscar) {
+                    $query->where('nombre_curso', 'like', "%{$buscar}%")
+                        ->orWhere('descripcion', 'like', "%{$buscar}%");
+                });
+            })
+            ->orderBy('nombre_curso')
+            ->paginate($request->integer('per_page', 15))
+            ->withQueryString();
+    }
+
+    private function htmxModule(Request $request, GradoArea $gradoArea): View
     {
         $gradoArea->load('nivel');
 
-        $cursos = Curso::where('grado_area_id', $gradoArea->id)
-            ->orderBy('nombre_curso')
-            ->get();
-
-        return view(
-            'niveles.gradoAreas.cursos.cursosview',
-            compact('gradoArea', 'cursos')
-        );
+        return view('niveles.gradoAreas.cursos.partials.module', [
+            'gradoArea' => $gradoArea,
+            'cursos' => $this->getCursos($request, $gradoArea),
+            'buscar' => $request->string('buscar'),
+        ]);
     }
 }

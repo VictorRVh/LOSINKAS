@@ -42,9 +42,14 @@
         }
     }"
     x-on:submit="submit($event)"
+    x-on:htmx:after-request="saving = false"
     class="space-y-5 p-5"
     method="POST"
-    action="{{ $action }}">
+    action="{{ $action }}"
+    hx-post="{{ $action }}"
+    hx-target="#cursos-module"
+    hx-select="#cursos-module"
+    hx-swap="outerHTML">
     @csrf
 
     @if ($method !== 'POST')

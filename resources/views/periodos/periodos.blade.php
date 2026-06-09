@@ -100,7 +100,7 @@
     <x-ui.modal name="edit-periodo-{{ $periodo->id }}" title="[ PERIODOS / EDITAR ]">
         <form class="space-y-5 p-5" method="POST" action="{{ route('periodos.update', $periodo) }}">
             @csrf
-            @method('PUT')
+            @method('PATCH')
 
             <div>
                 <label class="mb-2 block font-['Space_Grotesk',sans-serif] text-xs font-bold uppercase tracking-[0.18em] text-[#5C6F72]">Nombre</label>

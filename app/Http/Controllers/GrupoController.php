@@ -15,88 +15,70 @@ use Illuminate\Validation\Rule;
 
 class GrupoController extends Controller
 {
-    public function index(Request $request): View|JsonResponse
+    public function index(Request $request): View
     {
-        $query = Grupo::query()
-            ->with(['periodo', 'curso', 'seccion', 'matriculas', 'estudiantes', 'notaEstudiantes'])
-            ->when($request->filled('periodo_id'), fn ($query) => $query->where('periodo_id', $request->integer('periodo_id')))
-            ->when($request->filled('curso_id'), fn ($query) => $query->where('curso_id', $request->integer('curso_id')))
-            ->when($request->filled('seccion_id'), fn ($query) => $query->where('seccion_id', $request->integer('seccion_id')))
-            ->when($request->filled('buscar'), function ($query) use ($request) {
-                $buscar = $request->string('buscar');
-
-                $query->where('nombre_grupo', 'like', "%{$buscar}%");
-            })
-            ->orderBy('nombre_grupo');
-
-        if ($request->wantsJson()) {
-            $grupos = $query->paginate($request->integer('per_page', 15));
-            return response()->json($grupos);
-        }
-
-        $grupos = $query->paginate(15);
-        $periodos = Periodo::orderBy('nombre_periodo')->get();
-        $cursos = Curso::orderBy('nombre_curso')->get();
-        $secciones = Seccion::orderBy('nombre_seccion')->get();
-        $niveles = Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get();
-
-        // Prepare simple arrays for the frontend
-        $nivelesForJs = $niveles->map(function ($n) {
-            return [
-                'id' => $n->id,
-                'nombre_nivel' => $n->nombre_nivel,
-                'gradoAreas' => $n->gradoAreas->map(fn($g) => ['id' => $g->id, 'nombre_grado' => $g->nombre_grado])->values(),
-            ];
-        });
-
-        return view('grupos.grupos', compact('grupos', 'periodos', 'cursos', 'secciones', 'nivelesForJs'));
+        return view('grupos.grupos', [
+            'grupos' => $this->getGrupos($request),
+            'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+            'secciones' => Seccion::orderBy('nombre_seccion')->get(),
+            'niveles' => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
+            'cursos' => Curso::with('gradoArea')->orderBy('nombre_curso')->get(),
+        ]);
     }
 
-    public function store(Request $request): JsonResponse|RedirectResponse
+    public function byCurso(Request $request, Curso $curso): View
+    {
+        $curso->load(['gradoArea.nivel']);
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $curso);
+        }
+
+        return view('grupos.grupos', [
+            'curso' => $curso,
+            'grupos' => $this->getGrupos($request, $curso),
+            'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+            'secciones' => Seccion::orderBy('nombre_seccion')->get(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse|View
     {
         $validated = $request->validate([
-            'periodo_id' => ['required', 'integer', 'exists:periodos,id'],
-            'seccion_id' => ['required', 'integer', 'exists:secciones,id'],
-            'curso_ids' => ['required', 'array', 'min:1'],
-            'curso_ids.*' => ['integer', 'exists:cursos,id'],
-            'activo' => ['sometimes', 'boolean'],
+            'periodo_id' => ['required', 'exists:periodos,id'],
+            'seccion_id' => ['required', 'exists:secciones,id'],
+            'curso_ids'   => ['required', 'array', 'min:1'],
+            'curso_ids.*' => ['exists:cursos,id'],
+            'activo' => ['nullable', 'boolean'],
         ]);
 
-        $periodoId = $validated['periodo_id'];
-        $seccionId = $validated['seccion_id'];
-        $activo = $request->boolean('activo');
+        $cursos = Curso::with('gradoArea')
+            ->whereIn('id', $validated['curso_ids'])
+            ->get();
 
-        $created = [];
-
-        foreach ($validated['curso_ids'] as $cursoId) {
-            // Skip if group already exists for same periodo/seccion/curso
-            $exists = Grupo::where('periodo_id', $periodoId)
-                ->where('seccion_id', $seccionId)
-                ->where('curso_id', $cursoId)
-                ->exists();
-
-            if ($exists) {
-                continue;
-            }
-
-            $curso = Curso::find($cursoId);
-
-            $created[] = Grupo::create([
-                'periodo_id' => $periodoId,
-                'seccion_id' => $seccionId,
-                'curso_id' => $cursoId,
-                'nombre_grupo' => $curso?->nombre_curso ?? null,
-                'activo' => $activo,
+        foreach ($cursos as $curso) {
+            Grupo::create([
+                'periodo_id'   => $validated['periodo_id'],
+                'seccion_id'   => $validated['seccion_id'],
+                'curso_id'     => $curso->id,
+                'grado_id'     => $request->grado_id,
+                'nombre_grupo' => $curso->nombre_curso,
+                'activo'       => $request->boolean('activo'),
             ]);
         }
 
-        if ($request->wantsJson()) {
-            return response()->json($created, 201);
+        session()->flash('success', 'Grupo creado correctamente');
+
+        if ($request->header('HX-Request')) {
+            return view('grupos.partials.module', [
+                'grupos' => $this->getGrupos($request),
+                'niveles' => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
+                'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+                'secciones' => Seccion::orderBy('nombre_seccion')->get(),
+            ]);
         }
 
-        return redirect()
-            ->route('grupos.index')
-            ->with('status', count($created) . ' grupos creados correctamente.');
+        return redirect()->route('grupos.index');
     }
 
     public function show(Grupo $grupo): JsonResponse
@@ -115,7 +97,7 @@ class GrupoController extends Controller
                 'exists:secciones,id',
                 Rule::unique('grupos', 'seccion_id')
                     ->ignore($grupo->id)
-                    ->where(fn ($query) => $query
+                    ->where(fn($query) => $query
                         ->where('periodo_id', $request->input('periodo_id', $grupo->periodo_id))
                         ->where('curso_id', $request->input('curso_id', $grupo->curso_id))),
             ],
@@ -147,5 +129,35 @@ class GrupoController extends Controller
         return redirect()
             ->route('grupos.index')
             ->with('status', 'Grupo eliminado correctamente.');
+    }
+
+    private function getGrupos(Request $request, ?Curso $curso = null)
+    {
+        return Grupo::query()
+            ->when($curso, fn($q) => $q->where('curso_id', $curso->id))
+            ->when(
+                $request->filled('periodo_id'),
+                fn($q) => $q->where('periodo_id', $request->integer('periodo_id'))
+            )
+            ->when(
+                $request->filled('seccion_id'),
+                fn($q) => $q->where('seccion_id', $request->integer('seccion_id'))
+            )
+            ->when($request->filled('buscar'), function ($q) use ($request) {
+                $q->where('nombre_grupo', 'like', "%{$request->buscar}%");
+            })
+            ->with(['periodo', 'curso', 'seccion'])
+            ->orderBy('nombre_grupo')
+            ->paginate(15)
+            ->withQueryString();
+    }
+
+    private function htmxModule(Request $request, Curso $curso): View
+    {
+        return view('grupos.partials.module', [
+            'curso' => $curso,
+            'grupos' => $this->getGrupos($request, $curso),
+            'buscar' => $request->string('buscar'),
+        ]);
     }
 }

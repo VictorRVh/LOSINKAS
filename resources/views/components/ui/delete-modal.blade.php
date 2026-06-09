@@ -3,6 +3,7 @@
 'title' => '[ ELIMINAR ]',
 'itemName',
 'action',
+'target' => null,
 ])
 
 <x-ui.modal :name="$name" :title="$title">
@@ -27,14 +28,12 @@
             </button>
 
             <form
-                method="POST"
-                action="{{ $action }}"
-                hx-post="{{ $action }}"
-                hx-target="#niveles-module"
-                hx-select="#niveles-module"
-                hx-swap="outerHTML">
+                hx-delete="{{ $action }}"
+                @if($target)
+                hx-target="{{ $target }}"
+                hx-swap="outerHTML"
+                @endif>
                 @csrf
-                @method('DELETE')
 
                 <button
                     type="submit"

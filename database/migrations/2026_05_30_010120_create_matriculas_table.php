@@ -16,8 +16,8 @@ return new class extends Migration
 
             $table->date('fecha_matricula')->nullable();
 
-            $table->foreignId('estudiante_id')->constrained('estudiantes')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('grupo_id')->constrained('grupos')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('estudiante_id')->constrained('estudiantes')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('grupo_id')->constrained('grupos')->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->timestamps();
         });

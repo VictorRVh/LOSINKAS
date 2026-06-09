@@ -18,6 +18,7 @@ class Grupo extends Model
         'periodo_id',
         'curso_id',
         'seccion_id',
+        'grado_id',
         'nombre_grupo',
         'activo',
     ];

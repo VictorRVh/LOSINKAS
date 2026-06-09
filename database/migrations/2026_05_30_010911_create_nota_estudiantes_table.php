@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('respuestas_estudiante')->nullable();
             $table->string('observacion')->nullable();
 
-            $table->foreignId('estudiante_id')->constrained('estudiantes')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('grupo_id')->constrained('grupos')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('estudiante_id')->constrained('estudiantes')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('grupo_id')->constrained('grupos')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('curso_examen_id')->constrained('curso_examen')->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->timestamps();

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('clave_respuestas')->nullable();
             $table->boolean('activo')->default(true);
 
-            $table->foreignId('grado_area_id')->constrained('grado_areas')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('grado_area_id')->constrained('grado_areas')->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->timestamps();
         });

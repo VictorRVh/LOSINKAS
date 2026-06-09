@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedInteger('orden')->default(0);
             $table->boolean('activo')->default(true);
 
-            $table->foreignId('curso_id')->constrained('cursos')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('curso_id')->constrained('cursos')->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->timestamps();
         });

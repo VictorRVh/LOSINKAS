@@ -12,8 +12,6 @@ use Illuminate\View\View;
 
 class GradoAreaController extends Controller
 {
-
-
     public function index(Request $request): JsonResponse
     {
         $gradoAreas = GradoArea::query()
@@ -23,13 +21,14 @@ class GradoAreaController extends Controller
 
         return response()->json($gradoAreas);
     }
-    public function byNivel(Nivel $nivel): View
+
+    public function byNivel(Request $request, Nivel $nivel): View
     {
-        $gradoAreas = GradoArea::query()
-            ->where('nivel_id', $nivel->id)
-            ->with(['cursos', 'examenes'])
-            ->orderBy('nombre_grado')
-            ->paginate(15);
+        $gradoAreas = $this->getGradoAreas($request, $nivel);
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $nivel);
+        }
 
         return view('niveles.gradoAreas.gradosAreas', [
             'nivel' => $nivel,
@@ -37,7 +36,7 @@ class GradoAreaController extends Controller
         ]);
     }
 
-    public function store(Request $request, Nivel $nivel): RedirectResponse
+    public function store(Request $request, Nivel $nivel): RedirectResponse|View
     {
         $validated = $request->validate([
             'nombre_grado' => [
@@ -56,12 +55,18 @@ class GradoAreaController extends Controller
 
         GradoArea::create($validated);
 
+        session()->flash('status', 'Grado creado correctamente.');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $nivel);
+        }
+
         return redirect()
             ->route('niveles.grado-areas', $nivel)
             ->with('status', 'Grado creado correctamente.');
     }
 
-    public function update(Request $request, GradoArea $gradoArea): RedirectResponse
+    public function update(Request $request, GradoArea $gradoArea): RedirectResponse|View
     {
         $validated = $request->validate([
             'nombre_grado' => [
@@ -80,19 +85,60 @@ class GradoAreaController extends Controller
 
         $gradoArea->update($validated);
 
+        $nivel = Nivel::findOrFail($gradoArea->nivel_id);
+
+        session()->flash('status', 'Grado actualizado correctamente.');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $nivel);
+        }
+
         return redirect()
-            ->route('niveles.grado-areas', $gradoArea->nivel_id)
+            ->route('niveles.grado-areas', $nivel)
             ->with('status', 'Grado actualizado correctamente.');
     }
 
-    public function destroy(GradoArea $gradoArea): RedirectResponse
+    public function destroy(Request $request, GradoArea $gradoArea): RedirectResponse|View
     {
-        $nivelId = $gradoArea->nivel_id;
+        $nivel = Nivel::findOrFail($gradoArea->nivel_id);
 
         $gradoArea->delete();
 
+        session()->flash('status', 'Grado eliminado correctamente.');
+
+        if ($request->header('HX-Request')) {
+            return $this->htmxModule($request, $nivel);
+        }
+
         return redirect()
-            ->route('niveles.grado-areas', $nivelId)
+            ->route('niveles.grado-areas', $nivel)
             ->with('status', 'Grado eliminado correctamente.');
+    }
+
+    private function getGradoAreas(Request $request, Nivel $nivel)
+    {
+        return GradoArea::query()
+            ->where('nivel_id', $nivel->id)
+            ->with(['cursos', 'examenes'])
+            ->when($request->filled('buscar'), function ($query) use ($request) {
+                $buscar = $request->string('buscar');
+
+                $query->where(function ($query) use ($buscar) {
+                    $query->where('nombre_grado', 'like', "%{$buscar}%")
+                        ->orWhere('descripcion', 'like', "%{$buscar}%");
+                });
+            })
+            ->orderBy('nombre_grado')
+            ->paginate($request->integer('per_page', 15))
+            ->withQueryString();
+    }
+
+    private function htmxModule(Request $request, Nivel $nivel): View
+    {
+        return view('niveles.gradoAreas.partials.module', [
+            'nivel' => $nivel,
+            'gradoAreas' => $this->getGradoAreas($request, $nivel),
+            'buscar' => $request->string('buscar'),
+        ]);
     }
 }
