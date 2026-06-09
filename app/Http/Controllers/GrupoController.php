@@ -71,9 +71,10 @@ class GrupoController extends Controller
 
         if ($request->header('HX-Request')) {
             return view('grupos.partials.module', [
-                'grupos' => $this->getGrupos($request),
-                'niveles' => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
-                'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+                'grupos'    => $this->getGrupos($request),
+                'niveles'   => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
+                'cursos'    => Curso::with('gradoArea')->orderBy('nombre_curso')->get(), 
+                'periodos'  => Periodo::orderBy('nombre_periodo')->get(),
                 'secciones' => Seccion::orderBy('nombre_seccion')->get(),
             ]);
         }
