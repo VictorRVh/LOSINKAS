@@ -6,6 +6,7 @@ use App\Models\Estudiante;
 use App\Models\GradoArea;
 use App\Models\Grupo;
 use App\Models\Matricula;
+use App\Models\Nivel;
 use App\Models\Periodo;
 use App\Models\Seccion;
 use Illuminate\Http\JsonResponse;
@@ -16,11 +17,66 @@ use Illuminate\View\View;
 
 class MatriculaController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
-        return view('matriculas.matriculas', [
-            'matriculas' => $this->getMatriculas($request),
-        ] + $this->sharedData());
+        return view(
+            'matriculas.index',
+            $this->sharedData()
+        );
+    }
+    public function grupos(Request $request): View
+    {
+        $estudiantes = Estudiante::query()
+            ->when(
+                $request->filled('periodo_id'),
+                fn($q) => $q->whereHas(
+                    'matriculas.grupo',
+                    fn($g) => $g->where('periodo_id', $request->periodo_id)
+                )
+            )
+            ->when(
+                $request->filled('grado_id'),
+                fn($q) => $q->whereHas(
+                    'matriculas.grupo',
+                    fn($g) => $g->where('grado_id', $request->grado_id)
+                )
+            )
+            ->when(
+                $request->filled('seccion_id'),
+                fn($q) => $q->whereHas(
+                    'matriculas.grupo',
+                    fn($g) => $g->where('seccion_id', $request->seccion_id)
+                )
+            )
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('matriculas.partials.grupos', [
+            'estudiantes' => $estudiantes,
+            'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+            'grados' => GradoArea::orderBy('nombre_grado')->get(),
+            'secciones' => Seccion::orderBy('nombre_seccion')->get(),
+        ]);
+    }
+    private function sharedData()
+    {
+        return [
+            'estudiantes' => Estudiante::orderBy('apellidos')->get(),
+
+            'grupos' => Grupo::with([
+                'curso',
+                'seccion',
+                'periodo'
+            ])->get(),
+
+            'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+
+            'niveles' => Nivel::orderBy('nombre_nivel')->get(),
+
+            'grados' => GradoArea::orderBy('nombre_grado')->get(),
+
+            'secciones' => Seccion::orderBy('nombre_seccion')->get(),
+        ];
     }
 
     public function store(Request $request): RedirectResponse|View
@@ -120,20 +176,20 @@ class MatriculaController extends Controller
             ->withQueryString();
     }
 
-    private function sharedData()
-    {
-        return [
-            'estudiantes' => Estudiante::orderBy('apellidos')->get(),
+    // private function sharedData()
+    // {
+    //     return [
+    //         'estudiantes' => Estudiante::orderBy('apellidos')->get(),
 
-            'grupos' => Grupo::with(['curso', 'seccion', 'periodo'])
-                ->orderBy('nombre_grupo')
-                ->get(),
+    //         'grupos' => Grupo::with(['curso', 'seccion', 'periodo'])
+    //             ->orderBy('nombre_grupo')
+    //             ->get(),
 
-            'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+    //         'periodos' => Periodo::orderBy('nombre_periodo')->get(),
 
-            'grados' => GradoArea::orderBy('nombre_grado')->get(),
+    //         'grados' => GradoArea::orderBy('nombre_grado')->get(),
 
-            'secciones' => Seccion::orderBy('nombre_seccion')->get(),
-        ];
-    }
+    //         'secciones' => Seccion::orderBy('nombre_seccion')->get(),
+    //     ];
+    // }
 }

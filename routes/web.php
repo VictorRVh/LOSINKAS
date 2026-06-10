@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CursoController;
+use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\GradoAreaController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\MatriculaController;
@@ -76,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cursos/{curso}', [CursoController::class, 'destroy'])
         ->name('cursos.destroy');
 
+    //GRUPOS 
     Route::get('/grupos', [GrupoController::class, 'index'])
         ->name('grupos.index');
 
@@ -99,19 +101,41 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/periodos/{periodo}', [PeriodoController::class, 'destroy'])
         ->name('periodos.destroy');
+    ///////////////MATERICULAS
+    Route::prefix('matriculas')->name('matriculas.')->group(function () {
 
-    Route::get('/matriculas', [MatriculaController::class, 'index'])
-        ->name('matriculas.index');
+        // Pestaña: Matricular estudiante
+        Route::get('/', [MatriculaController::class, 'index'])
+            ->name('index');
 
-    Route::post('/matriculas', [MatriculaController::class, 'store'])
-        ->name('matriculas.store');
+        Route::post('/', [MatriculaController::class, 'store'])
+            ->name('store');
 
-    Route::patch('/matriculas/{periodo}', [MatriculaController::class, 'update'])
-        ->name('matriculas.update');
+        Route::delete('/{matricula}', [MatriculaController::class, 'destroy'])
+            ->name('destroy');
 
-    Route::delete('/matriculas/{periodo}', [MatriculaController::class, 'destroy'])
-        ->name('matriculas.destroy');
 
+        // Pestaña: Lista por grupos
+        Route::get('/grupos', [MatriculaController::class, 'index'])
+            ->name('grupos.index');
+
+        Route::get('/grupos/{grupo}', [MatriculaController::class, 'show'])
+            ->name('grupos.show');
+
+
+        // // Pestaña: Estudiantes con reserva
+        // Route::get('/reservas', [MatriculaReservaController::class, 'index'])
+        //     ->name('reservas.index');
+    });
+
+    // ESTUDIANTES
+
+    Route::resource('estudiantes', EstudianteController::class);
+
+    Route::get(
+        '/estudiantes/buscar-dni',
+        [EstudianteController::class, 'buscarPorDni']
+    )->name('estudiantes.buscar-dni');
 });
 
 require __DIR__ . '/auth.php';

@@ -56,6 +56,12 @@
             Matriculas
         </a>
 
+        <a href="{{ route('estudiantes.index') }}"
+            class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em]
+           {{ request()->routeIs('estudiantes.index') ? 'bg-[#008080] text-white' : 'hover:bg-[#008080] hover:text-white' }}">
+            Estudiantes
+        </a>
+
     </nav>
 
     {{-- USUARIO --}}
@@ -105,8 +111,6 @@
                     Salir
                 </button>
             </form>
-
         </div>
-
     </div>
 </aside>
