@@ -35,7 +35,15 @@ class GradoAreaController extends Controller
             'gradoAreas' => $gradoAreas,
         ]);
     }
+    public function optionsByNivel(Nivel $nivel)
+    {
+        $grados = GradoArea::query()
+            ->where('nivel_id', $nivel->id)
+            ->orderBy('nombre_grado')
+            ->get();
 
+        return view('grupos.partials.grado-options', compact('grados'));
+    }
     public function store(Request $request, Nivel $nivel): RedirectResponse|View
     {
         $validated = $request->validate([

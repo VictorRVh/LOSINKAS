@@ -36,6 +36,10 @@ class Grupo extends Model
     {
         return $this->belongsTo(Curso::class);
     }
+    public function grado(): BelongsTo
+    {
+        return $this->belongsTo(GradoArea::class, 'grado_id');
+    }
 
     public function seccion(): BelongsTo
     {

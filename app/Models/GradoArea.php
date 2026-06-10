@@ -38,7 +38,10 @@ class GradoArea extends Model
     // {
     //     return $this->hasMany(Grupo::class);
     // }
-
+    public function grupos(): HasMany
+    {
+        return $this->hasMany(Grupo::class, 'grado_id');
+    }
     public function examenes(): HasMany
     {
         return $this->hasMany(Examen::class);
