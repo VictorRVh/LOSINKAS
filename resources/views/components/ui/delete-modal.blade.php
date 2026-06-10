@@ -28,12 +28,15 @@
             </button>
 
             <form
+                method="POST"
+                action="{{ $action }}"
                 hx-delete="{{ $action }}"
                 @if($target)
                 hx-target="{{ $target }}"
                 hx-swap="outerHTML"
                 @endif>
                 @csrf
+                @method('DELETE')
 
                 <button
                     type="submit"

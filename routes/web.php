@@ -93,6 +93,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/grupos/{grupo}', [GrupoController::class, 'destroy'])
         ->name('grupos.destroy');
 
+    Route::get('grupos/{grupo}/edit', [GrupoController::class, 'edit'])->name('grupos.edit');
+
     Route::get('/periodos', [PeriodoController::class, 'index'])
         ->name('periodos.index');
 
