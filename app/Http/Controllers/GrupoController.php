@@ -35,23 +35,37 @@ class GrupoController extends Controller
         return view('grupos.grupos', $data);
     }
 
-    public function seccionesDisponibles(Request $request): View
+    public function seccionesDisponibles(Request $request)
     {
         $secciones = Seccion::query()
-            ->whereHas('grupos', function ($query) use ($request) {
+            ->whereHas('grupos', function ($q) use ($request) {
 
-                $query->when($request->periodo_id, function ($q) use ($request) {
+                if ($request->filled('periodo_id')) {
                     $q->where('periodo_id', $request->periodo_id);
-                });
+                }
 
-                $query->when($request->grado_id, function ($q) use ($request) {
+                if ($request->filled('grado_id')) {
                     $q->where('grado_id', $request->grado_id);
-                });
+                }
             })
             ->orderBy('nombre_seccion')
             ->get();
 
         return view('grupos.partials.secciones-options', compact('secciones'));
+    }
+
+    public function gradosDisponibles(Request $request)
+    {
+        $grados = GradoArea::query()
+            ->when(
+                $request->nivel_id,
+                fn($q) =>
+                $q->where('nivel_id', $request->nivel_id)
+            )
+            ->orderBy('nombre_grado')
+            ->get();
+
+        return view('grupos.partials.grados-options', compact('grados'));
     }
 
     public function byCurso(Request $request, Curso $curso): View
@@ -73,11 +87,10 @@ class GrupoController extends Controller
 
     public function store(Request $request): RedirectResponse|View
     {
-
-
         $validated = $request->validate([
             'periodo_id' => ['required', 'exists:periodos,id'],
             'seccion_id' => ['required', 'exists:secciones,id'],
+            'grado_id'   => ['required', 'exists:grado_areas,id'],
             'curso_ids'   => ['required', 'array', 'min:1'],
             'curso_ids.*' => ['exists:cursos,id'],
             'activo' => ['nullable', 'boolean'],
@@ -91,8 +104,8 @@ class GrupoController extends Controller
             Grupo::create([
                 'periodo_id'   => $validated['periodo_id'],
                 'seccion_id'   => $validated['seccion_id'],
+                'grado_id'     => $validated['grado_id'],
                 'curso_id'     => $curso->id,
-                'grado_id'     => $request->grado_id,
                 'nombre_grupo' => $curso->nombre_curso,
                 'activo'       => $request->boolean('activo'),
             ]);
@@ -101,14 +114,9 @@ class GrupoController extends Controller
         session()->flash('success', 'Grupo creado correctamente');
 
         if ($request->header('HX-Request')) {
-            return view('grupos.partials.module', [
-                'grupos'    => $this->getGrupos($request),
-                'niveles'   => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
-                'grados'   => GradoArea::orderBy('activo')->get(),
-                'cursos'    => Curso::with('gradoArea')->orderBy('nombre_curso')->get(),
-                'periodos'  => Periodo::orderBy('nombre_periodo')->get(),
-                'secciones' => Seccion::orderBy('nombre_seccion')->get(),
-            ]);
+            $grupos = $this->getGrupos($request);
+
+            return view('grupos.partials.grid', compact('grupos'));
         }
 
         return redirect()->route('grupos.index');

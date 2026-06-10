@@ -47,7 +47,8 @@
                             hx-get="{{ route('grupos.secciones-disponibles') }}"
                             hx-target="#seccion_id"
                             hx-swap="innerHTML"
-                            hx-include="[name='grado_id'],[name='nivel_id']"
+                            hx-include="[name='grado_id']"
+                            hx-trigger="change"
                             class="border-2 border-[#0A1718] px-3 py-2">
 
                             <option value="">Todos los periodos</option>
@@ -64,6 +65,10 @@
                         {{-- NIVEL --}}
                         <select
                             name="nivel_id"
+                            hx-get="{{ route('grupos.grados-disponibles') }}"
+                            hx-target="#grado_id"
+                            hx-swap="innerHTML"
+                            hx-trigger="change"
                             class="border-2 border-[#0A1718] px-3 py-2">
 
                             <option value="">Todos los niveles</option>
@@ -79,23 +84,22 @@
 
                         {{-- GRADO --}}
                         <select
+                            id="grado_id"
                             name="grado_id"
                             hx-get="{{ route('grupos.secciones-disponibles') }}"
                             hx-target="#seccion_id"
                             hx-swap="innerHTML"
-                            hx-include="[name='periodo_id'],[name='nivel_id']"
+                            hx-include="[name='periodo_id']"
+                            hx-trigger="change"
                             class="border-2 border-[#0A1718] px-3 py-2">
 
                             <option value="">Todos los grados</option>
 
-                            @foreach($grados as $grado)
-                            @if(!request('nivel_id') || $grado->nivel_id == request('nivel_id'))
-                            <option value="{{ $grado->id }}"
-                                @selected(request('grado_id')==$grado->id)>
+                            <!-- @foreach($grados as $grado)
+                            <option value="{{ $grado->id }}">
                                 {{ $grado->nombre_grado }}
                             </option>
-                            @endif
-                            @endforeach
+                            @endforeach -->
 
                         </select>
 
