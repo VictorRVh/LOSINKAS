@@ -3,6 +3,7 @@
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\GradoAreaController;
 use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\NivelController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
@@ -88,6 +89,20 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/periodos/{periodo}', [PeriodoController::class, 'destroy'])
         ->name('periodos.destroy');
+
+
+    Route::get('/matriculas', [MatriculaController::class, 'index'])
+        ->name('matriculas.index');
+
+    Route::post('/matriculas', [MatriculaController::class, 'store'])
+        ->name('matriculas.store');
+
+    Route::patch('/matriculas/{periodo}', [MatriculaController::class, 'update'])
+        ->name('matriculas.update');
+
+    Route::delete('/matriculas/{periodo}', [MatriculaController::class, 'destroy'])
+        ->name('matriculas.destroy');
+
 });
 
 require __DIR__ . '/auth.php';

@@ -2,74 +2,138 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Estudiante;
+use App\Models\GradoArea;
+use App\Models\Grupo;
 use App\Models\Matricula;
+use App\Models\Periodo;
+use App\Models\Seccion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class MatriculaController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): View
     {
-        $matriculas = Matricula::query()
-            ->with(['estudiante', 'grupo'])
-            ->when($request->filled('estudiante_id'), fn ($query) => $query->where('estudiante_id', $request->integer('estudiante_id')))
-            ->when($request->filled('grupo_id'), fn ($query) => $query->where('grupo_id', $request->integer('grupo_id')))
-            ->when($request->filled('estado'), fn ($query) => $query->where('estado', $request->input('estado')))
-            // ->orderByDesc('fecha_matricula')
-            ->paginate($request->integer('per_page', 15));
-
-        return response()->json($matriculas);
+        return view('matriculas.matriculas', [
+            'matriculas' => $this->getMatriculas($request),
+        ] + $this->sharedData());
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): RedirectResponse|View
     {
         $validated = $request->validate([
-            'estudiante_id' => [
-                'required',
-                'integer',
-                'exists:estudiantes,id',
-                Rule::unique('matriculas')->where(fn ($query) => $query->where('grupo_id', $request->input('grupo_id'))),
-            ],
-            'grupo_id' => ['required', 'integer', 'exists:grupos,id'],
+            'estudiante_id' => ['required', 'integer', 'exists:estudiantes,id'],
+            'grupo_ids' => ['required', 'array'],
+            'grupo_ids.*' => ['integer', 'exists:grupos,id'],
         ]);
 
-        $matricula = Matricula::create($validated);
+        foreach ($validated['grupo_ids'] as $grupoId) {
+            Matricula::firstOrCreate([
+                'estudiante_id' => $validated['estudiante_id'],
+                'grupo_id' => $grupoId,
+            ]);
+        }
 
-        return response()->json($matricula->load(['estudiante', 'grupo']), 201);
+        if ($request->header('HX-Request')) {
+            return view('matriculas.partials.module', [
+                'matriculas' => $this->getMatriculas($request),
+            ] + $this->sharedData());
+        }
+
+        return redirect()
+            ->route('matriculas.index')
+            ->with('status', 'Matrícula registrada correctamente.');
     }
 
-    public function show(Matricula $matricula): JsonResponse
-    {
-        return response()->json($matricula->load(['estudiante', 'grupo']));
-    }
-
-    public function update(Request $request, Matricula $matricula): JsonResponse
+    public function update(Request $request, Matricula $matricula): View|RedirectResponse
     {
         $validated = $request->validate([
-            'estudiante_id' => [
-                'sometimes',
-                'integer',
-                'exists:estudiantes,id',
-                Rule::unique('matriculas')
-                    ->ignore($matricula->id)
-                    ->where(fn ($query) => $query->where('grupo_id', $request->input('grupo_id', $matricula->grupo_id))),
-            ],
+            'estudiante_id' => ['sometimes', 'integer', 'exists:estudiantes,id'],
             'grupo_id' => ['sometimes', 'integer', 'exists:grupos,id'],
-            // 'fecha_matricula' => ['nullable', 'date'],
         ]);
 
         $matricula->update($validated);
 
-        return response()->json($matricula->load(['estudiante', 'grupo']));
+        if ($request->header('HX-Request')) {
+            return view('matriculas.partials.module', [
+                'matriculas' => $this->getMatriculas($request),
+            ] + $this->sharedData());
+        }
+
+        return redirect()
+            ->route('matriculas.index')
+            ->with('status', 'Matrícula actualizada correctamente.');
     }
 
-    public function destroy(Matricula $matricula): JsonResponse
+    public function destroy(Request $request, Matricula $matricula): View|RedirectResponse
     {
         $matricula->delete();
 
-        return response()->json([
-            'message' => 'Matricula eliminada correctamente.',
+        if ($request->header('HX-Request')) {
+            return view('matriculas.partials.module', [
+                'matriculas' => $this->getMatriculas($request),
+            ] + $this->sharedData());
+        }
+
+        return redirect()
+            ->route('matriculas.index')
+            ->with('status', 'Matrícula eliminada correctamente.');
+    }
+
+    public function previewGrupos(Request $request)
+    {
+        $validated = $request->validate([
+            'periodo_id' => ['required', 'integer'],
+            'grado_id' => ['required', 'integer'],
+            'seccion_id' => ['required', 'integer'],
         ]);
+
+        $grupos = Grupo::with(['curso'])
+            ->where('periodo_id', $validated['periodo_id'])
+            ->where('grado_id', $validated['grado_id'])
+            ->where('seccion_id', $validated['seccion_id'])
+            ->get();
+
+        return view('matriculas.partials.grupos-preview', [
+            'grupos' => $grupos
+        ]);
+    }
+
+    private function getMatriculas(Request $request)
+    {
+        return Matricula::query()
+            ->with(['estudiante', 'grupo.curso', 'grupo.seccion', 'grupo.periodo'])
+            ->when(
+                $request->filled('estudiante_id'),
+                fn($q) => $q->where('estudiante_id', $request->integer('estudiante_id'))
+            )
+            ->when(
+                $request->filled('grupo_id'),
+                fn($q) => $q->where('grupo_id', $request->integer('grupo_id'))
+            )
+            ->orderByDesc('created_at')
+            ->paginate(15)
+            ->withQueryString();
+    }
+
+    private function sharedData()
+    {
+        return [
+            'estudiantes' => Estudiante::orderBy('apellidos')->get(),
+
+            'grupos' => Grupo::with(['curso', 'seccion', 'periodo'])
+                ->orderBy('nombre_grupo')
+                ->get(),
+
+            'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+
+            'grados' => GradoArea::orderBy('nombre_grado')->get(),
+
+            'secciones' => Seccion::orderBy('nombre_seccion')->get(),
+        ];
     }
 }
