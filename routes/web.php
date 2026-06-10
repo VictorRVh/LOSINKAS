@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
         ->name('profile.destroy');
 
     // GRADOS
+
     Route::get('/niveles/{nivel}/grado-areas', [GradoAreaController::class, 'byNivel'])
         ->name('niveles.grado-areas');
 
@@ -44,6 +45,15 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/grado-areas/{gradoArea}', [GradoAreaController::class, 'destroy'])
         ->name('grado-areas.destroy');
+
+    Route::get(
+        '/niveles/{nivel}/grado-options',
+        [GradoAreaController::class, 'optionsByNivel']
+    )->name('niveles.grado-options');
+    Route::get(
+        '/grupos/secciones-disponibles',
+        [GrupoController::class, 'seccionesDisponibles']
+    )->name('grupos.secciones-disponibles');
 
     // NIVEL
     Route::get('/niveles', [NivelController::class, 'index'])->name('niveles.index');
@@ -89,7 +99,6 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/periodos/{periodo}', [PeriodoController::class, 'destroy'])
         ->name('periodos.destroy');
-
 
     Route::get('/matriculas', [MatriculaController::class, 'index'])
         ->name('matriculas.index');
