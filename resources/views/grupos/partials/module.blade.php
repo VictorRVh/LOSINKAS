@@ -157,7 +157,7 @@
 
                             <button
                                 type="button"
-                                hx-get="{{ route('grupos.edit', $grupo) }}"
+                                hx-get="{{ route('grupos.update', $grupo) }}"
                                 hx-target="#grupo-edit-form"
                                 hx-swap="innerHTML"
                                 x-on:click="$dispatch('open-modal', 'edit-grupo')"
