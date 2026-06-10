@@ -49,6 +49,12 @@
            {{ request()->routeIs('periodos.index') ? 'bg-[#008080] text-white' : 'hover:bg-[#008080] hover:text-white' }}">
             Periodos
         </a>
+       
+        <a href="{{ route('matriculas.index') }}"
+            class="flex items-center border-2 border-[#0A1718] px-4 py-3 font-bold uppercase tracking-[0.12em]
+           {{ request()->routeIs('matriculas.index') ? 'bg-[#008080] text-white' : 'hover:bg-[#008080] hover:text-white' }}">
+            Matriculas
+        </a>
 
     </nav>
 
