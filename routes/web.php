@@ -56,6 +56,9 @@ Route::middleware('auth')->group(function () {
         [GrupoController::class, 'seccionesDisponibles']
     )->name('grupos.secciones-disponibles');
 
+    Route::get('/grupos/grados-disponibles', [GrupoController::class, 'gradosDisponibles'])
+        ->name('grupos.grados-disponibles');
+
     // NIVEL
     Route::get('/niveles', [NivelController::class, 'index'])->name('niveles.index');
     Route::post('/niveles', [NivelController::class, 'store'])->name('niveles.store');
