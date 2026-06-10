@@ -37,10 +37,6 @@
                 {{-- FILTROS (HTMX CORREGIDO) --}}
                 {{-- ========================= --}}
                 <form
-                    hx-get="{{ route('grupos.index') }}"
-                    hx-trigger="change"
-                    hx-target="#grupos-grid"
-                    hx-push-url="true"
                     class="border-b border-[#5C6F72]/30 p-5">
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -48,6 +44,10 @@
                         {{-- PERIODO --}}
                         <select
                             name="periodo_id"
+                            hx-get="{{ route('grupos.secciones-disponibles') }}"
+                            hx-target="#seccion_id"
+                            hx-swap="innerHTML"
+                            hx-include="[name='grado_id'],[name='nivel_id']"
                             class="border-2 border-[#0A1718] px-3 py-2">
 
                             <option value="">Todos los periodos</option>
@@ -80,6 +80,10 @@
                         {{-- GRADO --}}
                         <select
                             name="grado_id"
+                            hx-get="{{ route('grupos.secciones-disponibles') }}"
+                            hx-target="#seccion_id"
+                            hx-swap="innerHTML"
+                            hx-include="[name='periodo_id'],[name='nivel_id']"
                             class="border-2 border-[#0A1718] px-3 py-2">
 
                             <option value="">Todos los grados</option>
@@ -97,17 +101,11 @@
 
                         {{-- SECCION --}}
                         <select
+                            id="seccion_id"
                             name="seccion_id"
                             class="border-2 border-[#0A1718] px-3 py-2">
 
                             <option value="">Todas las secciones</option>
-
-                            @foreach($secciones as $seccion)
-                            <option value="{{ $seccion->id }}"
-                                @selected(request('seccion_id')==$seccion->id)>
-                                {{ $seccion->nombre_seccion }}
-                            </option>
-                            @endforeach
 
                         </select>
 

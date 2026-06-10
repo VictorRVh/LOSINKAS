@@ -21,21 +21,8 @@ class GrupoController extends Controller
         $data = [
             'grupos' => $this->getGrupos($request),
             'periodos' => Periodo::orderBy('nombre_periodo')->get(),
-            'secciones' => Seccion::query()
-                ->whereHas('grupos', function ($query) use ($request) {
+            'secciones' => Seccion::orderBy('nombre_seccion')->get(),
 
-                    $query->when(
-                        $request->filled('periodo_id'),
-                        fn($q) => $q->where('periodo_id', $request->periodo_id)
-                    );
-
-                    $query->when(
-                        $request->filled('grado_id'),
-                        fn($q) => $q->where('grado_id', $request->grado_id)
-                    );
-                })
-                ->orderBy('nombre_seccion')
-                ->get(),
             'niveles' => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
             'grados' => GradoArea::orderBy('nombre_grado')->get(),
             'cursos' => Curso::with('gradoArea')->orderBy('nombre_curso')->get(),
@@ -50,9 +37,22 @@ class GrupoController extends Controller
 
     public function seccionesDisponibles(Request $request): View
     {
-        dd($request->all());
-    }
+        $secciones = Seccion::query()
+            ->whereHas('grupos', function ($query) use ($request) {
 
+                $query->when($request->periodo_id, function ($q) use ($request) {
+                    $q->where('periodo_id', $request->periodo_id);
+                });
+
+                $query->when($request->grado_id, function ($q) use ($request) {
+                    $q->where('grado_id', $request->grado_id);
+                });
+            })
+            ->orderBy('nombre_seccion')
+            ->get();
+
+        return view('grupos.partials.secciones-options', compact('secciones'));
+    }
 
     public function byCurso(Request $request, Curso $curso): View
     {
@@ -73,6 +73,8 @@ class GrupoController extends Controller
 
     public function store(Request $request): RedirectResponse|View
     {
+
+
         $validated = $request->validate([
             'periodo_id' => ['required', 'exists:periodos,id'],
             'seccion_id' => ['required', 'exists:secciones,id'],
@@ -102,6 +104,7 @@ class GrupoController extends Controller
             return view('grupos.partials.module', [
                 'grupos'    => $this->getGrupos($request),
                 'niveles'   => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
+                'grados'   => GradoArea::orderBy('activo')->get(),
                 'cursos'    => Curso::with('gradoArea')->orderBy('nombre_curso')->get(),
                 'periodos'  => Periodo::orderBy('nombre_periodo')->get(),
                 'secciones' => Seccion::orderBy('nombre_seccion')->get(),

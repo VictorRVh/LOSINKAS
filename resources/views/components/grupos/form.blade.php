@@ -61,7 +61,7 @@
     hx-swap="outerHTML"
     x-on:htmx:config-request="
         const seccion = document.getElementById('seccion_id')
-        const periodo = document.getElementById('periodo_id_f')
+        const periodo = document.getElementById('periodo_id')
 
         if (!selectedGrado) {
             alert('Selecciona un grado')
@@ -135,10 +135,10 @@
                 name="grado_id"
                 x-model="selectedGrado"
                 class="input"
-                hx-get="{{ route('grupos.secciones-disponibles') }}"
+                hx-get="{{ route('grupos.index') }}"
                 hx-trigger="change"
                 hx-target="#seccion_id"
-                hx-include="closest form [name='periodo_id_f']">
+                hx-include="closest form [name='periodo_id']">
 
                 <option value="">
                     Seleccione un grado
@@ -163,11 +163,11 @@
             <label class="label">Periodo</label>
 
             <select
-                id="periodo_id_f"
-                name="periodo_id_f"
+                id="periodo_id"
+                name="periodo_id"
                 x-model="selectedPeriodo"
                 class="input"
-                hx-get="{{ route('grupos.secciones-disponibles') }}"
+                hx-get="{{ route('grupos.index') }}"
                 hx-trigger="change"
                 hx-target="#seccion_id"
                 hx-include="closest form [name='grado_id']">
