@@ -226,7 +226,6 @@
         </div>
 
     </x-ui.modal>
-
     {{-- MODAL CREATE --}}
     <x-ui.modal name="create-grupo" title="[ GRUPO / NUEVO ]" :show="$errors->any()">
         <x-grupos.form
