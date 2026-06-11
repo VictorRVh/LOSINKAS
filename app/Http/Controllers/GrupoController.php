@@ -6,6 +6,7 @@ use App\Models\Curso;
 use App\Models\GradoArea;
 use App\Models\Grupo;
 use App\Models\Nivel;
+use App\Models\PadreGrupo;
 use App\Models\Periodo;
 use App\Models\Seccion;
 use Illuminate\Http\JsonResponse;
@@ -13,20 +14,22 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class GrupoController extends Controller
 {
     public function index(Request $request): View
     {
-        // Grados pre-poblados si hay nivel seleccionado
         $grados = $request->filled('nivel_id')
             ? GradoArea::where('nivel_id', $request->nivel_id)
-            ->orderBy('nombre_grado')->get()
+            ->orderBy('nombre_grado')
+            ->get()
             : collect();
 
-        // Secciones pre-pobladas si hay periodo + grado seleccionados
-        $secciones_filtro = ($request->filled('periodo_id') && $request->filled('grado_id'))
-            ? Seccion::whereHas('grupos', function ($q) use ($request) {
+        $secciones_filtro = (
+            $request->filled('periodo_id') && $request->filled('grado_id')
+        )
+            ? Seccion::whereHas('padreGrupos', function ($q) use ($request) {
                 $q->where('periodo_id', $request->periodo_id)
                     ->where('grado_id', $request->grado_id);
             })->orderBy('nombre_seccion')->get()
@@ -34,15 +37,23 @@ class GrupoController extends Controller
 
         $data = [
             'grupos' => $this->getGrupos($request),
+
             'periodos' => Periodo::orderBy('nombre_periodo')->get(),
             'secciones' => Seccion::orderBy('nombre_seccion')->get(),
 
             'niveles' => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
             'grados' => GradoArea::orderBy('nombre_grado')->get(),
             'cursos' => Curso::with('gradoArea')->orderBy('nombre_curso')->get(),
-            'grados_filtro'   => $grados,
+
+            'grados_filtro' => $grados,
             'secciones_filtro' => $secciones_filtro,
-            'filtros' => $request->only(['periodo_id', 'nivel_id', 'grado_id', 'seccion_id']),
+
+            'filtros' => $request->only([
+                'periodo_id',
+                'nivel_id',
+                'grado_id',
+                'seccion_id'
+            ]),
         ];
 
         if ($request->header('HX-Request')) {
@@ -59,11 +70,10 @@ class GrupoController extends Controller
             return view('grupos.partials.secciones-options', ['secciones' => collect()]);
         }
 
-        $secciones = Seccion::query()
-            ->whereHas('grupos', function ($q) use ($request) {
-                $q->where('periodo_id', $request->periodo_id)
-                    ->where('grado_id', $request->grado_id);
-            })
+        $secciones = Seccion::whereHas('padreGrupos', function ($q) use ($request) {
+            $q->where('periodo_id', $request->periodo_id)
+                ->where('grado_id', $request->grado_id);
+        })
             ->orderBy('nombre_seccion')
             ->get();
 
@@ -100,52 +110,57 @@ class GrupoController extends Controller
         ]);
     }
 
-
-    public function store(Request $request): RedirectResponse|View
+    public function store(Request $request)
     {
         $validated = $request->validate([
+            'nivel_id'    => ['required', 'exists:niveles,id'],
+            'grado_id'    => ['required', 'exists:grado_areas,id'],
             'periodo_id'  => ['required', 'exists:periodos,id'],
             'seccion_id'  => ['required', 'exists:secciones,id'],
-            'grado_id'    => ['required', 'exists:grado_areas,id'],
             'curso_ids'   => ['required', 'array', 'min:1'],
             'curso_ids.*' => ['exists:cursos,id'],
             'activo'      => ['nullable', 'boolean'],
         ]);
 
-        $cursos = Curso::with('gradoArea')
-            ->whereIn('id', $validated['curso_ids'])
-            ->get();
+        DB::transaction(function () use ($validated, $request) {
 
-        foreach ($cursos as $curso) {
-            Grupo::create([
-                'periodo_id'   => $validated['periodo_id'],
-                'seccion_id'   => $validated['seccion_id'],
-                'grado_id'     => $validated['grado_id'],
-                'curso_id'     => $curso->id,
-                'nombre_grupo' => $curso->nombre_curso,
-                'activo'       => $request->boolean('activo'),
+            // 1️⃣ Crear PADRE
+            $padreGrupo = PadreGrupo::create([
+                'periodo_id' => $validated['periodo_id'],
+                'grado_id'   => $validated['grado_id'],
+                'seccion_id' => $validated['seccion_id'],
             ]);
-        }
 
-        session()->flash('success', 'Grupo creado correctamente');
+            // 2️⃣ Crear GRUPOS por curso
+            $cursos = Curso::whereIn('id', $validated['curso_ids'])->get();
 
+            foreach ($cursos as $curso) {
+                Grupo::create([
+                    'padre_id'     => $padreGrupo->id,
+                    'curso_id'     => $curso->id,
+                    'nombre_grupo' => $curso->nombre_curso,
+                    'activo'       => $request->boolean('activo'),
+                ]);
+            }
+        });
+
+        session()->flash('success', 'Grupos creados correctamente');
+
+        // ✅ RESPUESTA HTMX (evita 302)
         if ($request->header('HX-Request')) {
-            // ← Request limpio, sin los parámetros del form
-            $cleanRequest = new \Illuminate\Http\Request();
+            $cleanRequest = new Request();
 
-            $data = [
-                'grupos'   => $this->getGrupos($cleanRequest),
-                'periodos' => Periodo::orderBy('nombre_periodo')->get(),
-                'secciones' => Seccion::orderBy('nombre_seccion')->get(),
-                'niveles'  => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
-                'grados'   => GradoArea::orderBy('nombre_grado')->get(),
-                'cursos'   => Curso::with('gradoArea')->orderBy('nombre_curso')->get(),
-                'grados_filtro'    => collect(), // ← vacío, no hay filtros activos
-                'secciones_filtro' => collect(), // ← vacío, no hay filtros activos
+            return view('grupos.partials.module', [
+                'grupos'           => $this->getGrupos($cleanRequest),
+                'periodos'         => Periodo::orderBy('nombre_periodo')->get(),
+                'secciones'        => Seccion::orderBy('nombre_seccion')->get(),
+                'niveles'          => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
+                'grados'           => GradoArea::orderBy('nombre_grado')->get(),
+                'cursos'           => Curso::with('gradoArea')->orderBy('nombre_curso')->get(),
+                'grados_filtro'    => collect(),
+                'secciones_filtro' => collect(),
                 'filtros'          => [],
-            ];
-
-            return view('grupos.partials.module', $data);
+            ]);
         }
 
         return redirect()->route('grupos.index');
@@ -153,7 +168,17 @@ class GrupoController extends Controller
 
     public function show(Grupo $grupo): JsonResponse
     {
-        return response()->json($grupo->load(['periodo', 'curso', 'seccion', 'matriculas', 'estudiantes', 'notaEstudiantes']));
+        return response()->json(
+            $grupo->load([
+                'padre.periodo',
+                'padre.seccion',
+                'padre.grado',
+                'curso',
+                'matriculas',
+                'estudiantes',
+                'notaEstudiantes'
+            ])
+        );
     }
 
     public function update(Request $request, Grupo $grupo): JsonResponse|RedirectResponse|View
@@ -172,12 +197,15 @@ class GrupoController extends Controller
         ]);
 
         // En edit solo se edita un curso (el primero seleccionado)
-        $grupo->update([
+        $grupo->padre->update([
             'periodo_id' => $validated['periodo_id'],
             'seccion_id' => $validated['seccion_id'],
             'grado_id'   => $validated['grado_id'],
-            'curso_id'   => $validated['curso_ids'][0],
-            'activo'     => $request->boolean('activo'),
+        ]);
+
+        $grupo->update([
+            'curso_id' => $validated['curso_ids'][0],
+            'activo'   => $request->boolean('activo'),
         ]);
 
         session()->flash('success', 'Grupo actualizado correctamente.');
@@ -256,41 +284,50 @@ class GrupoController extends Controller
 
             ->when(
                 $request->filled('periodo_id'),
-                fn($q) => $q->where('periodo_id', $request->periodo_id)
+                fn($q) => $q->whereHas(
+                    'padre',
+                    fn($p) =>
+                    $p->where('periodo_id', $request->periodo_id)
+                )
             )
 
             ->when(
                 $request->filled('seccion_id'),
-                fn($q) => $q->where('seccion_id', $request->seccion_id)
+                fn($q) => $q->whereHas(
+                    'padre',
+                    fn($p) =>
+                    $p->where('seccion_id', $request->seccion_id)
+                )
             )
 
             ->when(
                 $request->filled('grado_id'),
-                function ($q) use ($request) {
-                    $q->whereHas('curso.gradoArea', function ($sub) use ($request) {
-                        $sub->where('id', $request->grado_id);
-                    });
-                }
+                fn($q) => $q->whereHas(
+                    'padre',
+                    fn($p) =>
+                    $p->where('grado_id', $request->grado_id)
+                )
             )
 
             ->when(
                 $request->filled('nivel_id'),
-                function ($q) use ($request) {
-                    $q->whereHas('curso.gradoArea.nivel', function ($sub) use ($request) {
-                        $sub->where('id', $request->nivel_id);
-                    });
-                }
+                fn($q) => $q->whereHas(
+                    'curso.gradoArea.nivel',
+                    fn($n) => $n->where('id', $request->nivel_id)
+                )
             )
 
             ->with([
-                'periodo',
+                'padre.periodo',
+                'padre.seccion',
+                'padre.grado',
                 'curso.gradoArea.nivel',
-                'seccion',
             ])
-            ->orderBy('nombre_grupo')
+            ->orderBy('activo')
             ->paginate(15)
             ->withQueryString();
     }
+
     private function htmxModule(Request $request, Curso $curso): View
     {
         return view('grupos.partials.module', [

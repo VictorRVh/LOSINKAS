@@ -51,11 +51,11 @@
                             </p>
                             <p>
                                 <strong>Periodo:</strong>
-                                {{ $matricula->grupo->periodo->nombre_periodo }}
+                                {{ $matricula->grupo->padre->periodo->nombre_periodo }}
                             </p>
                             <p>
                                 <strong>Sección:</strong>
-                                {{ $matricula->grupo->seccion->nombre_seccion }}
+                                {{ $matricula->grupo->padre->seccion->nombre_seccion }}
                             </p>
                         </div>
 

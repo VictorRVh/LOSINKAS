@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Matricula extends Pivot
@@ -33,5 +34,10 @@ class Matricula extends Pivot
     public function grupo(): BelongsTo
     {
         return $this->belongsTo(Grupo::class);
+    }
+    
+    public function padre(): BelongsTo
+    {
+        return $this->belongsTo(PadreGrupo::class);
     }
 }

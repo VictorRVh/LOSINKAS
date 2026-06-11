@@ -15,40 +15,24 @@ class Grupo extends Model
     protected $table = 'grupos';
 
     protected $fillable = [
-        'periodo_id',
+        'padre_id',
         'curso_id',
-        'seccion_id',
-        'grado_id',
-        'nombre_grupo',
         'activo',
+        'nombre_grupo'
     ];
 
     protected $casts = [
         'activo' => 'boolean',
     ];
 
-    public function periodo(): BelongsTo
+    public function padre(): BelongsTo
     {
-        return $this->belongsTo(Periodo::class);
+        return $this->belongsTo(PadreGrupo::class, 'padre_id');
     }
 
     public function curso(): BelongsTo
     {
         return $this->belongsTo(Curso::class);
-    }
-    public function grado(): BelongsTo
-    {
-        return $this->belongsTo(GradoArea::class, 'grado_id');
-    }
-
-    public function seccion(): BelongsTo
-    {
-        return $this->belongsTo(Seccion::class);
-    }
-
-    public function matriculas(): HasMany
-    {
-        return $this->hasMany(Matricula::class);
     }
 
     public function estudiantes(): BelongsToMany

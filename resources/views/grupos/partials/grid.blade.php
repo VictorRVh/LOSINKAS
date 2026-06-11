@@ -13,9 +13,9 @@
         </div>
 
         <div class="mt-2 space-y-1 text-sm text-[#5C6F72]">
-            <p><strong>Periodo:</strong> {{ $grupo->periodo->nombre_periodo }}</p>
+            <p><strong>Periodo:</strong> {{ $grupo->padre->periodo->nombre_periodo }}</p>
             <p><strong>Curso:</strong> {{ $grupo->curso->nombre_curso }}</p>
-            <p><strong>Sección:</strong> {{ $grupo->seccion->nombre_seccion }}</p>
+            <p><strong>Sección:</strong> {{ $grupo->padre->seccion->nombre_seccion }}</p>
         </div>
 
         <div class="mt-4 flex flex-wrap gap-2">

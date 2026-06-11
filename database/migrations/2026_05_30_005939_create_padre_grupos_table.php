@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('grupos', function (Blueprint $table) {
+        Schema::create('padre_grupos', function (Blueprint $table) {
             $table->id();
 
             $table->string('nombre_grupo', 120)->nullable();
-            $table->boolean('activo')->default(true);
 
-            $table->foreignId('padre_id')->constrained('padre_grupos')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('curso_id')->constrained('cursos')->cascadeOnUpdate()->cascadeOnDelete();
-
+            $table->foreignId('periodo_id')->constrained('periodos')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('seccion_id')->constrained('secciones')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('grado_id')->constrained('grado_areas')->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->timestamps();
         });
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('grupos');
+        Schema::dropIfExists('padre_grupos');
     }
 };

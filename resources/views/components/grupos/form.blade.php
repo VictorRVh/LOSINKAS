@@ -97,6 +97,7 @@
             </label>
 
             <select
+                name="nivel_id"
                 x-model="selectedNivel"
                 x-on:change="selectedGrado = ''; selectedCursos = []"
                 class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">

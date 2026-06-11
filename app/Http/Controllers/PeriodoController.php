@@ -14,7 +14,6 @@ class PeriodoController extends Controller
     public function index(Request $request): View|JsonResponse
     {
         $periodos = Periodo::query()
-            ->with('grupos')
             ->when($request->filled('buscar'), function ($query) use ($request) {
                 $buscar = $request->string('buscar');
 

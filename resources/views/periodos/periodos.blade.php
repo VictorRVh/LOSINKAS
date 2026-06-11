@@ -37,7 +37,6 @@
                             <tr class="bg-[#F4F7F7]">
                                 <th class="border-b border-r border-[#5C6F72]/30 px-3 py-3 text-left text-xs font-bold uppercase">ID</th>
                                 <th class="border-b border-r border-[#5C6F72]/30 px-3 py-3 text-left text-xs font-bold uppercase">Nombre</th>
-                                <th class="border-b border-[#5C6F72]/30 px-3 py-3 text-left text-xs font-bold uppercase">Grupos</th>
                                 <th class="border-b border-[#5C6F72]/30 px-3 py-3 text-left text-xs font-bold uppercase">Acciones</th>
                             </tr>
                         </thead>
@@ -46,7 +45,6 @@
                             <tr class="hover:bg-[#F4F7F7]">
                                 <td class="border-b border-r border-[#5C6F72]/30 px-3 py-2 text-sm">{{ $periodo->id }}</td>
                                 <td class="border-b border-r border-[#5C6F72]/30 px-3 py-2 text-sm">{{ $periodo->nombre_periodo }}</td>
-                                <td class="border-b border-r border-[#5C6F72]/30 px-3 py-2 text-sm">{{ $periodo->grupos->count() }}</td>
                                 <td class="border-b border-[#5C6F72]/30 px-3 py-2">
                                     <div class="flex flex-wrap gap-2">
                                         <x-ui.action-button

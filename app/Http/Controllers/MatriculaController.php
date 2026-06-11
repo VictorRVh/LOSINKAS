@@ -71,6 +71,7 @@ class MatriculaController extends Controller
             ->route('matriculas.index')
             ->with('status', 'Matrícula actualizada correctamente.');
     }
+    
     private function sharedData()
     {
         return [
@@ -78,8 +79,9 @@ class MatriculaController extends Controller
 
             'grupos' => Grupo::with([
                 'curso',
-                'seccion',
-                'periodo'
+                'padre.periodo',
+                'padre.seccion',
+                'padre.grado',
             ])->get(),
 
             'periodos' => Periodo::orderBy('nombre_periodo')->get(),
@@ -91,6 +93,7 @@ class MatriculaController extends Controller
             'secciones' => Seccion::orderBy('nombre_seccion')->get(),
         ];
     }
+
     public function destroy(Request $request, Matricula $matricula): View|RedirectResponse
     {
         $matricula->delete();
