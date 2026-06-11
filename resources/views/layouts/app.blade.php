@@ -30,16 +30,17 @@
                 </p> -->
                 {{ $breadcrumb ?? '' }}
 
-                <h2 class="text-3xl font-bold uppercase">
-                    {{ $header ?? 'Panel' }}
-                </h2>
-
             </div>
 
         </header>
 
         <!-- CONTENIDO DE CADA VISTA -->
         <main class="p-6">
+            
+                <h2 class="text-3xl font-bold uppercase">
+                    {{ $header ?? 'Panel' }}
+                </h2>
+
 
             {{ $slot }}
 

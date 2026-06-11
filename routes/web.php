@@ -109,28 +109,18 @@ Route::middleware('auth')->group(function () {
     ///////////////MATERICULAS
     Route::prefix('matriculas')->name('matriculas.')->group(function () {
 
-        // Pestaña: Matricular estudiante
+        // INDEX (layout con submenu)
         Route::get('/', [MatriculaController::class, 'index'])
             ->name('index');
 
-        Route::post('/', [MatriculaController::class, 'store'])
-            ->name('store');
+        Route::get('/tab/matricular', [MatriculaController::class, 'tabMatricular'])
+            ->name('tab.matricular');
 
-        Route::delete('/{matricula}', [MatriculaController::class, 'destroy'])
-            ->name('destroy');
+        Route::get('/tab/grupos', [MatriculaController::class, 'tabGrupos'])
+            ->name('tab.grupos');
 
-
-        // Pestaña: Lista por grupos
-        Route::get('/grupos', [MatriculaController::class, 'index'])
-            ->name('grupos.index');
-
-        Route::get('/grupos/{grupo}', [MatriculaController::class, 'show'])
-            ->name('grupos.show');
-
-
-        // // Pestaña: Estudiantes con reserva
-        // Route::get('/reservas', [MatriculaReservaController::class, 'index'])
-        //     ->name('reservas.index');
+        Route::post('/', [MatriculaController::class, 'store'])->name('store');
+        Route::delete('/{matricula}', [MatriculaController::class, 'destroy'])->name('destroy');
     });
 
     // ESTUDIANTES
