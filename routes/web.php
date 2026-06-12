@@ -6,6 +6,7 @@ use App\Http\Controllers\GradoAreaController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\NivelController;
+use App\Http\Controllers\PadreGrupoController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -126,6 +127,27 @@ Route::middleware('auth')->group(function () {
     // ESTUDIANTES
 
     Route::resource('estudiantes', EstudianteController::class);
+
+    // PADRE GRUPO
+    Route::get(
+        '/padre-grupos/{padreGrupo}/edit',
+        [PadreGrupoController::class, 'edit']
+    )->name('padre-grupos.edit');
+
+    Route::post(
+        '/padre-grupos/{padreGrupo}/cursos',
+        [PadreGrupoController::class, 'agregarCurso']
+    )->name('padre-grupos.cursos.agregar');
+
+    Route::delete(
+        '/padre-grupos/cursos/{grupo}',
+        [PadreGrupoController::class, 'quitarCurso']
+    )->name('padre-grupos.cursos.destroy');
+
+    Route::delete(
+        '/padre-grupos/{padreGrupo}',
+        [PadreGrupoController::class, 'destroy']
+    )->name('padre-grupos.destroy');
 
     Route::get(
         '/estudiantes/buscar-dni',

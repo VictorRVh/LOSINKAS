@@ -109,79 +109,76 @@
                 <div class="p-5 space-y-6">
 
                     @forelse ($padres as $padre)
-
-                    {{-- BLOQUE SECCIÓN --}}
                     <div class="border-2 border-[#0A1718] p-4">
 
                         {{-- CABECERA --}}
-                        <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+                        <div class="mb-4 flex items-center justify-between">
                             <div>
-                                <h4 class="font-bold uppercase text-[#0A1718]">
-                                    {{ $padre->grado->nombre_grado }}
-                                    - {{ $padre->seccion->nombre_seccion }}
+                                <h4 class="font-bold uppercase">
+                                    {{ $padre->grado->nombre_grado }} -
+                                    {{ $padre->seccion->nombre_seccion }}
                                 </h4>
                                 <p class="text-xs text-[#5C6F72]">
                                     Periodo: {{ $padre->periodo->nombre_periodo }}
                                     | Nivel: {{ $padre->grado->nivel->nombre_nivel }}
                                 </p>
                             </div>
+
+                            {{-- EDITAR --}}
+                            <div class="flex gap-2">
+
+                                {{-- EDITAR CURSOS --}}
+                                <button
+                                    hx-get="{{ route('padre-grupos.edit', $padre) }}"
+                                    hx-target="#padre-grupo-edit-form"
+                                    hx-swap="innerHTML"
+                                    x-data
+                                    x-on:click="$dispatch('open-modal', 'edit-padre-grupo')"
+                                    class="border-2 border-[#0A1718] px-3 py-2 text-xs font-bold uppercase
+               hover:bg-[#008080] hover:text-white">
+                                    Editar cursos
+                                </button>
+
+                                {{-- ELIMINAR SECCIÓN --}}
+                                <button
+                                    hx-delete="{{ route('padre-grupos.destroy', $padre) }}"
+                                    hx-confirm="¿Eliminar esta sección y todos sus cursos?"
+                                    hx-target="#grupos-module"
+                                    hx-swap="outerHTML"
+                                    class="border-2 border-red-500 px-3 py-2 text-xs font-bold uppercase
+               text-red-500 hover:bg-red-500 hover:text-white">
+                                    Eliminar
+                                </button>
+
+                            </div>
                         </div>
 
-                        {{-- GRUPOS / CURSOS --}}
+                        {{-- CURSOS --}}
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             @foreach ($padre->grupos as $grupo)
                             <div class="border-2 border-[#0A1718] p-3 bg-[#F9FBFB]">
-
-                                <div class="flex items-start justify-between">
-                                    <h5 class="font-bold uppercase text-sm">
-                                        {{ $grupo->curso->nombre_curso }}
-                                    </h5>
-
-                                    <span class="text-[10px] px-2 py-1 border">
-                                        {{ $grupo->activo ? 'Activo' : 'Inactivo' }}
-                                    </span>
-                                </div>
-
-                                <div class="mt-3 flex gap-2">
-                                    <button
-                                        hx-get="{{ route('grupos.edit', $grupo) }}"
-                                        hx-target="#grupo-edit-form"
-                                        hx-swap="innerHTML"
-                                        x-data
-                                        x-on:click="$dispatch('open-modal', 'edit-grupo')"
-                                        class="border-2 border-[#0A1718] px-2 py-1 text-[10px] font-bold uppercase hover:bg-[#008080] hover:text-white">
-                                        Editar
-                                    </button>
-
-                                    <button
-                                        hx-delete="{{ route('grupos.destroy', $grupo) }}"
-                                        hx-confirm="¿Eliminar este grupo?"
-                                        hx-target="#grupos-module"
-                                        hx-swap="outerHTML"
-                                        class="border-2 border-red-500 px-2 py-1 text-[10px] font-bold uppercase text-red-500 hover:bg-red-500 hover:text-white">
-                                        Eliminar
-                                    </button>
-                                </div>
+                                <h5 class="font-bold uppercase text-sm">
+                                    {{ $grupo->curso->nombre_curso }}
+                                </h5>
+                                <span class="text-[10px] border px-2 py-1 inline-block mt-2">
+                                    {{ $grupo->activo ? 'Activo' : 'Inactivo' }}
+                                </span>
                             </div>
                             @endforeach
                         </div>
-                    </div>
 
+                    </div>
                     @empty
                     <p class="text-center text-sm text-[#5C6F72]">
-                        No hay grupos para los filtros seleccionados.
+                        No hay registros
                     </p>
                     @endforelse
+
                 </div>
 
             </section>
         </div>
     </div>
-
-    {{-- MODAL EDIT --}}
-    <x-ui.modal name="edit-grupo" title="[ GRUPO / EDITAR ]">
-        <div id="grupo-edit-form"></div>
-    </x-ui.modal>
 
     {{-- MODAL CREATE --}}
     <x-ui.modal name="create-grupo" title="[ GRUPO / NUEVO ]">
@@ -192,6 +189,13 @@
             :secciones="$secciones"
             :action="route('grupos.store')"
             button-text="Crear Grupo" />
+    </x-ui.modal>
+
+    {{-- MODAL EDITAR SECCIÓN --}}
+    <x-ui.modal name="edit-padre-grupo" title="[ SECCIÓN / EDITAR CURSOS ]">
+        <div id="padre-grupo-edit-form">
+            {{-- HTMX cargará aquí el form --}}
+        </div>
     </x-ui.modal>
 
 </div>

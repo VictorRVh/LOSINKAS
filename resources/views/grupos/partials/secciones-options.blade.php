@@ -1,11 +1,16 @@
-<option value="">Seleccione una sección</option>
+<select
+    name="seccion_id"
+    id="seccion_id"
+    class="w-full border-2 px-4 py-3">
+    <option value="">Seleccione una sección</option>
 
-@forelse ($secciones as $seccion)
+    @forelse ($secciones as $seccion)
     <option value="{{ $seccion->id }}">
         {{ $seccion->nombre_seccion }}
     </option>
-@empty
+    @empty
     <option value="" disabled>
         No hay secciones disponibles
     </option>
-@endforelse
+    @endforelse
+</select>

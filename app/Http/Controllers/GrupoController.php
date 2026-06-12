@@ -86,24 +86,28 @@ class GrupoController extends Controller
 
     public function seccionesDisponibles(Request $request)
     {
-        $gradoId = $request->grado_id;
+        $gradoId   = $request->grado_id;
+        $periodoId = $request->periodo_id;
 
-        if (!$gradoId) {
+        if (!$gradoId || !$periodoId) {
             return view('grupos.partials.secciones-options', [
                 'secciones' => collect()
             ]);
         }
 
-        // Secciones ya usadas en ese grado
+        // Secciones ya usadas en ESTE grado y ESTE periodo
         $seccionesUsadas = PadreGrupo::where('grado_id', $gradoId)
+            ->where('periodo_id', $periodoId)
             ->pluck('seccion_id');
 
         // Secciones disponibles
-        $secciones = Seccion::whereNotIn('id', $seccionesUsadas)->get();
+        $secciones = Seccion::whereNotIn('id', $seccionesUsadas)
+            ->orderBy('nombre_seccion')
+            ->get();
 
         return view('grupos.partials.secciones-options', compact('secciones'));
-    }   
-
+    }
+    
     public function byCurso(Request $request, Curso $curso): View
     {
         $curso->load(['gradoArea.nivel']);

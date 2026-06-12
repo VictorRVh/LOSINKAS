@@ -125,28 +125,23 @@
                 id="grado_id"
                 name="grado_id"
                 x-model="selectedGrado"
-                x-on:change="selectedCursos = []"
-                class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none"
-                :class="{ 'border-red-500': errors.grado }">
+                x-on:change="
+                selectedCursos = [];
+                document.getElementById('seccion_id').innerHTML =
+                '<option value=\'\'>Seleccione una sección</option>'"
 
+                class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none">
                 <option value="">Seleccione un grado</option>
 
                 @foreach($niveles as $nivel)
                 @foreach($nivel->gradoAreas as $grado)
-
                 <option
                     value="{{ $grado->id }}"
-                    data-nivel="{{ $nivel->id }}"
-                    x-show="Number(selectedNivel) === {{ $nivel->id }}"
-                    @selected($grupo?->curso?->grado_area_id == $grado->id)>
-
+                    x-show="Number(selectedNivel) === {{ $nivel->id }}">
                     {{ $grado->nombre_grado }}
-
                 </option>
-
                 @endforeach
                 @endforeach
-
             </select>
 
             <p x-show="errors.grado"
@@ -163,9 +158,16 @@
 
             <select
                 name="periodo_id"
+                id="periodo_id"
                 x-model="selectedPeriodo"
-                class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none"
-                :class="{ 'border-red-500': errors.periodo }">
+
+                hx-get="{{ route('grupos.secciones-disponibles') }}"
+                hx-trigger="change"
+                hx-target="#seccion-wrapper"
+                hx-swap="innerHTML"
+                hx-include="#grado_id, #periodo_id"
+
+                class="w-full rounded-none border-2 px-4 py-3 outline-none">
 
                 <option value="">Seleccione un periodo</option>
 
@@ -189,24 +191,14 @@
                 Sección
             </label>
 
-            <select
-                name="seccion_id"
-                id="seccion_id"
-                class="w-full border-2 px-4 py-3">
-
-                <option value="">Seleccione una sección</option>
-
-                <!-- 👇 ESTE CONTENEDOR ES CLAVE -->
-                <span
-                    id="secciones-options"
-                    hx-get="{{ route('grupos.secciones-disponibles') }}"
-                    hx-trigger="change from:#grado_id"
-                    hx-target="#secciones-options"
-                    hx-swap="innerHTML"
-                    hx-include="#grado_id">
-                </span>
-
-            </select>
+            <div id="seccion-wrapper">
+                <select
+                    name="seccion_id"
+                    id="seccion_id"
+                    class="w-full border-2 px-4 py-3">
+                    <option value="">Seleccione una sección</option>
+                </select>
+            </div>
 
             <p x-show="errors.seccion"
                 x-text="errors.seccion"
