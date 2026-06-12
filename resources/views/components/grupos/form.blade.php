@@ -13,54 +13,55 @@
     x-data="{
         niveles: @js(
             collect($niveles)->map(fn($n) => [
-                'id'          => $n->id,
-                'nombre_nivel'=> $n->nombre_nivel,
-                'grado_areas' => collect($n->gradoAreas ?? [])->map(fn($g) => [
-                    'id'          => $g->id,
-                    'nombre_grado'=> $g->nombre_grado,
-                ])->values()->all(),
-            ])->values()->all()
+                'id' => $n->id,
+                'nombre_nivel' => $n->nombre_nivel,
+                'grado_areas' => collect($n->gradoAreas)->map(fn($g) => [
+                    'id' => $g->id,
+                    'nombre_grado' => $g->nombre_grado,
+                ])->values(),
+            ])->values()
         ),
 
         cursos: @js(
             collect($cursos)->map(fn($c) => [
-                'id'           => $c->id,
+                'id' => $c->id,
                 'nombre_curso' => $c->nombre_curso,
-                'grado_area_id'=> $c->grado_area_id,
-            ])->values()->all()
+                'grado_area_id' => $c->grado_area_id,
+            ])->values()
         ),
 
-        selectedNivel:   @js($grupo?->curso?->gradoArea?->nivel_id ?? ''),
-        selectedGrado:   @js($grupo?->curso?->grado_area_id ?? ''),
-        selectedPeriodo: @js($grupo?->periodo_id ?? ''),
-        selectedSeccion: @js($grupo?->seccion_id ?? ''),
-        selectedCursos:  @js($grupo ? [$grupo->curso_id] : []),
+        selectedNivel: '',
+        selectedGrado: '',
+        selectedPeriodo: '',
+        selectedCursos: [],
         saving: false,
         errors: {},
 
         gradosForSelectedNivel() {
-            const nivel = this.niveles.find(n => Number(n.id) === Number(this.selectedNivel))
-            return nivel ? nivel.grado_areas : []
+            return this.niveles.find(n => n.id == this.selectedNivel)?.grado_areas ?? []
         },
 
         cursosForSelectedGrado() {
-            return this.cursos.filter(c => Number(c.grado_area_id) === Number(this.selectedGrado))
+            return this.cursos.filter(c => c.grado_area_id == this.selectedGrado)
         },
 
         validate() {
             this.errors = {}
 
-            if (!this.selectedPeriodo)           this.errors.periodo  = 'Selecciona un periodo.'
-            if (!this.selectedGrado)             this.errors.grado    = 'Selecciona un grado.'
-            if (!this.selectedSeccion)           this.errors.seccion  = 'Selecciona una sección.'
-            if (this.selectedCursos.length === 0) this.errors.cursos  = 'Selecciona al menos un curso.'
+            const seccion = document.getElementById('seccion_id')?.value
+
+            if (!this.selectedPeriodo) this.errors.periodo = 'Selecciona un periodo.'
+            if (!this.selectedGrado)   this.errors.grado   = 'Selecciona un grado.'
+            if (!seccion)              this.errors.seccion = 'Selecciona una sección.'
+            if (!this.selectedCursos.length)
+                this.errors.cursos = 'Selecciona al menos un curso.'
 
             return Object.keys(this.errors).length === 0
         },
 
-        submit(event) {
+        submit(e) {
             if (!this.validate()) {
-                event.preventDefault()
+                e.preventDefault()
                 return
             }
             this.saving = true
@@ -121,6 +122,7 @@
             </label>
 
             <select
+                id="grado_id"
                 name="grado_id"
                 x-model="selectedGrado"
                 x-on:change="selectedCursos = []"
@@ -189,20 +191,20 @@
 
             <select
                 name="seccion_id"
-                x-model="selectedSeccion"
-                class="w-full rounded-none border-2 border-[#0A1718] bg-[#F4F7F7] px-4 py-3 outline-none"
-                :class="{ 'border-red-500': errors.seccion }">
+                id="seccion_id"
+                class="w-full border-2 px-4 py-3">
 
                 <option value="">Seleccione una sección</option>
 
-                @foreach($secciones as $seccion)
-                <option value="{{ $seccion->id }}"
-                    @selected($grupo?->seccion_id == $seccion->id)>
-
-                    {{ $seccion->nombre_seccion }}
-
-                </option>
-                @endforeach
+                <!-- 👇 ESTE CONTENEDOR ES CLAVE -->
+                <span
+                    id="secciones-options"
+                    hx-get="{{ route('grupos.secciones-disponibles') }}"
+                    hx-trigger="change from:#grado_id"
+                    hx-target="#secciones-options"
+                    hx-swap="innerHTML"
+                    hx-include="#grado_id">
+                </span>
 
             </select>
 

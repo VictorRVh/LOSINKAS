@@ -1,3 +1,4 @@
+
 <x-app-layout>
 
     <x-slot name="breadcrumb">
@@ -13,13 +14,7 @@
         </h2>
     </x-slot>
 
-    {{-- SOLO EL MÓDULO --}}
-    @include('grupos.partials.module', [
-        'grupos' => $grupos,
-        'niveles' => $niveles,
-        'cursos' => $cursos,
-        'periodos' => $periodos,
-        'secciones' => $secciones,
-    ])
+    {{-- SOLO SE INCLUYE EL MÓDULO --}}
+    @include('grupos.partials.module')
 
 </x-app-layout>

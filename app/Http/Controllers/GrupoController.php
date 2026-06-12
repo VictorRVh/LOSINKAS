@@ -20,40 +20,48 @@ class GrupoController extends Controller
 {
     public function index(Request $request): View
     {
-        $grados = $request->filled('nivel_id')
-            ? GradoArea::where('nivel_id', $request->nivel_id)
-            ->orderBy('nombre_grado')
-            ->get()
-            : collect();
+        $grados = collect();
 
-        $secciones_filtro = (
-            $request->filled('periodo_id') && $request->filled('grado_id')
-        )
-            ? Seccion::whereHas('padreGrupos', function ($q) use ($request) {
-                $q->where('periodo_id', $request->periodo_id)
-                    ->where('grado_id', $request->grado_id);
-            })->orderBy('nombre_seccion')->get()
-            : collect();
+        if ($request->filled('nivel_id')) {
+            $grados = GradoArea::where('nivel_id', $request->nivel_id)
+                ->orderBy('nombre_grado')
+                ->get();
+        }
 
         $data = [
-            'grupos' => $this->getGrupos($request),
+            'padres' => PadreGrupo::query()
+                ->with([
+                    'periodo',
+                    'grado.nivel',
+                    'seccion',
+                    'grupos.curso',
+                ])
+                ->when(
+                    $request->filled('periodo_id'),
+                    fn($q) => $q->where('periodo_id', $request->periodo_id)
+                )
+                ->when(
+                    $request->filled('grado_id'),
+                    fn($q) => $q->where('grado_id', $request->grado_id)
+                )
+                ->when(
+                    $request->filled('nivel_id'),
+                    fn($q) => $q->whereHas(
+                        'grado.nivel',
+                        fn($n) => $n->where('id', $request->nivel_id)
+                    )
+                )
+                ->orderBy('grado_id')
+                ->orderBy('seccion_id')
+                ->get(),
 
             'periodos' => Periodo::orderBy('nombre_periodo')->get(),
+            'niveles'  => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
+
+            'cursos'   => Curso::orderBy('nombre_curso')->get(),
             'secciones' => Seccion::orderBy('nombre_seccion')->get(),
 
-            'niveles' => Nivel::with('gradoAreas')->orderBy('nombre_nivel')->get(),
-            'grados' => GradoArea::orderBy('nombre_grado')->get(),
-            'cursos' => Curso::with('gradoArea')->orderBy('nombre_curso')->get(),
-
-            'grados_filtro' => $grados,
-            'secciones_filtro' => $secciones_filtro,
-
-            'filtros' => $request->only([
-                'periodo_id',
-                'nivel_id',
-                'grado_id',
-                'seccion_id'
-            ]),
+            'filtros'  => $request->only(['periodo_id', 'nivel_id', 'grado_id']),
         ];
 
         if ($request->header('HX-Request')) {
@@ -63,36 +71,38 @@ class GrupoController extends Controller
         return view('grupos.grupos', $data);
     }
 
-    public function seccionesDisponibles(Request $request)
-    {
-        // Si no están ambos, no buscar
-        if (!$request->filled('periodo_id') || !$request->filled('grado_id')) {
-            return view('grupos.partials.secciones-options', ['secciones' => collect()]);
-        }
-
-        $secciones = Seccion::whereHas('padreGrupos', function ($q) use ($request) {
-            $q->where('periodo_id', $request->periodo_id)
-                ->where('grado_id', $request->grado_id);
-        })
-            ->orderBy('nombre_seccion')
-            ->get();
-
-        return view('grupos.partials.secciones-options', compact('secciones'));
-    }
-
     public function gradosDisponibles(Request $request)
     {
         $grados = GradoArea::query()
             ->when(
-                $request->nivel_id,
-                fn($q) =>
-                $q->where('nivel_id', $request->nivel_id)
+                $request->filled('nivel_id'),
+                fn($q) => $q->where('nivel_id', $request->nivel_id)
             )
             ->orderBy('nombre_grado')
             ->get();
 
         return view('grupos.partials.grados-options', compact('grados'));
     }
+
+    public function seccionesDisponibles(Request $request)
+    {
+        $gradoId = $request->grado_id;
+
+        if (!$gradoId) {
+            return view('grupos.partials.secciones-options', [
+                'secciones' => collect()
+            ]);
+        }
+
+        // Secciones ya usadas en ese grado
+        $seccionesUsadas = PadreGrupo::where('grado_id', $gradoId)
+            ->pluck('seccion_id');
+
+        // Secciones disponibles
+        $secciones = Seccion::whereNotIn('id', $seccionesUsadas)->get();
+
+        return view('grupos.partials.secciones-options', compact('secciones'));
+    }   
 
     public function byCurso(Request $request, Curso $curso): View
     {
@@ -274,59 +284,48 @@ class GrupoController extends Controller
         return redirect()->route('grupos.index')->with('status', 'Grupo eliminado correctamente.');
     }
 
-    private function getGrupos(Request $request, ?Curso $curso = null)
-    {
-        return Grupo::query()
-            ->when(
-                $curso,
-                fn($q) => $q->where('curso_id', $curso->id)
-            )
+    // private function getGrupos(Request $request, ?Curso $curso = null)
+    // {
+    //     return Grupo::query()
+    //         ->when(
+    //             $curso,
+    //             fn($q) => $q->where('curso_id', $curso->id)
+    //         )
 
-            ->when(
-                $request->filled('periodo_id'),
-                fn($q) => $q->whereHas(
-                    'padre',
-                    fn($p) =>
-                    $p->where('periodo_id', $request->periodo_id)
-                )
-            )
+    //         ->when(
+    //             $request->filled('periodo_id'),
+    //             fn($q) => $q->whereHas(
+    //                 'padre',
+    //                 fn($p) =>
+    //                 $p->where('periodo_id', $request->periodo_id)
+    //             )
+    //         )
+    //         ->when(
+    //             $request->filled('grado_id'),
+    //             fn($q) => $q->whereHas(
+    //                 'padre',
+    //                 fn($p) =>
+    //                 $p->where('grado_id', $request->grado_id)
+    //             )
+    //         )
+    //         ->when(
+    //             $request->filled('nivel_id'),
+    //             fn($q) => $q->whereHas(
+    //                 'curso.gradoArea.nivel',
+    //                 fn($n) => $n->where('id', $request->nivel_id)
+    //             )
+    //         )
 
-            ->when(
-                $request->filled('seccion_id'),
-                fn($q) => $q->whereHas(
-                    'padre',
-                    fn($p) =>
-                    $p->where('seccion_id', $request->seccion_id)
-                )
-            )
-
-            ->when(
-                $request->filled('grado_id'),
-                fn($q) => $q->whereHas(
-                    'padre',
-                    fn($p) =>
-                    $p->where('grado_id', $request->grado_id)
-                )
-            )
-
-            ->when(
-                $request->filled('nivel_id'),
-                fn($q) => $q->whereHas(
-                    'curso.gradoArea.nivel',
-                    fn($n) => $n->where('id', $request->nivel_id)
-                )
-            )
-
-            ->with([
-                'padre.periodo',
-                'padre.seccion',
-                'padre.grado',
-                'curso.gradoArea.nivel',
-            ])
-            ->orderBy('activo')
-            ->paginate(15)
-            ->withQueryString();
-    }
+    //         ->with([
+    //             'padre.periodo',
+    //             'padre.seccion',
+    //             'padre.grado',
+    //             'curso.gradoArea.nivel',
+    //         ])
+    //         ->orderBy('activo')
+    //         ->paginate(15)
+    //         ->withQueryString();
+    // }
 
     private function htmxModule(Request $request, Curso $curso): View
     {
