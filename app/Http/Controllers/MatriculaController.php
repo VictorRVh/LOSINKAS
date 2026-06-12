@@ -7,6 +7,7 @@ use App\Models\GradoArea;
 use App\Models\Grupo;
 use App\Models\Matricula;
 use App\Models\Nivel;
+use App\Models\PadreGrupo;
 use App\Models\Periodo;
 use App\Models\Seccion;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Carbon\Carbon;
 
 class MatriculaController extends Controller
 {
@@ -29,22 +31,66 @@ class MatriculaController extends Controller
     public function store(Request $request): RedirectResponse|View
     {
         $validated = $request->validate([
-            'estudiante_id' => ['required', 'integer', 'exists:estudiantes,id'],
-            'grupo_ids' => ['required', 'array'],
-            'grupo_ids.*' => ['integer', 'exists:grupos,id'],
+            'estudiante_id' => ['nullable', 'integer'],
+            'dni' => ['required'],
+            'nombres' => ['required'],
+            'apellidos' => ['required'],
+            'periodo_id' => ['required', 'integer'],
+            'grado_id' => ['required', 'integer'],
+            'seccion_id' => ['required', 'integer'],
         ]);
 
-        foreach ($validated['grupo_ids'] as $grupoId) {
-            Matricula::firstOrCreate([
-                'estudiante_id' => $validated['estudiante_id'],
-                'grupo_id' => $grupoId,
-            ]);
+        $estudiante = $request->filled('estudiante_id')
+            ? Estudiante::findOrFail($request->estudiante_id)
+            : Estudiante::firstOrCreate(
+                ['dni' => $request->dni],
+                [
+                    'nombres' => $request->nombres,
+                    'apellidos' => $request->apellidos,
+                ]
+            );
+
+        $grupo = PadreGrupo::where('seccion_id', $request->seccion_id)
+            ->where('periodo_id', $request->periodo_id)
+            ->where('grado_id', $request->grado_id)
+            ->first();
+
+        if (!$grupo) {
+            if ($request->header('HX-Request')) {
+                return view('matriculas.partials.error', [
+                    'message' => 'No se encontró un grupo con esos datos.'
+                ]);
+            }
+
+            return back()->withErrors(['grupo' => 'No se encontró un grupo con esos datos.']);
         }
 
+        $existe = Matricula::where('estudiante_id', $estudiante->id)
+            ->where('aula_id', $grupo->id)
+            ->exists();
+
+        if ($existe) {
+            if ($request->header('HX-Request')) {
+                return view('matriculas.partials.error', [
+                    'message' => 'El estudiante ya está matriculado en este grupo.'
+                ]);
+            }
+
+            return back()->withErrors(['matricula' => 'El estudiante ya está matriculado en este grupo.']);
+        }
+
+        Matricula::create([
+            'estudiante_id' => $estudiante->id,
+            'aula_id' => $grupo->id,
+            'fecha' => now()->toDateString(),
+            'activo' => 0
+        ]);
+
+        // 👇 HTMX RESPONSE
         if ($request->header('HX-Request')) {
-            return view('matriculas.partials.module', [
-                'matriculas' => $this->getMatriculas($request),
-            ] + $this->sharedData());
+            return view('matriculas.partials.success', [
+                'message' => 'Matrícula registrada correctamente.'
+            ]);
         }
 
         return redirect()
@@ -71,8 +117,8 @@ class MatriculaController extends Controller
             ->route('matriculas.index')
             ->with('status', 'Matrícula actualizada correctamente.');
     }
-    
-    private function sharedData()
+
+    private function sharedData(): array
     {
         return [
             'estudiantes' => Estudiante::orderBy('apellidos')->get(),
@@ -81,14 +127,46 @@ class MatriculaController extends Controller
                 'curso',
                 'padre.periodo',
                 'padre.seccion',
-                'padre.grado',
-            ])->get(),
+                'padre.grado.nivel',
+            ])
+                ->orderBy('nombre_grupo')
+                ->get()
+                ->map(function ($grupo) {
+
+                    return [
+                        'id' => $grupo->id,
+                        'nombre_grupo' => $grupo->nombre_grupo,
+
+                        'periodo_id' => $grupo->padre->periodo_id,
+                        'grado_id' => $grupo->padre->grado_id,
+                        'seccion_id' => $grupo->padre->seccion_id,
+                        'nivel_id' => $grupo->padre->grado->nivel_id,
+
+                        'grado' => [
+                            'id' => $grupo->padre->grado->id,
+                            'nombre_grado' => $grupo->padre->grado->nombre_grado,
+                        ],
+
+                        'nivel' => [
+                            'id' => $grupo->padre->grado->nivel->id,
+                            'nombre_nivel' => $grupo->padre->grado->nivel->nombre_nivel,
+                        ],
+
+                        'seccion' => [
+                            'id' => $grupo->padre->seccion->id,
+                            'nombre_seccion' => $grupo->padre->seccion->nombre_seccion,
+                        ],
+                    ];
+                })
+                ->values(),
 
             'periodos' => Periodo::orderBy('nombre_periodo')->get(),
 
             'niveles' => Nivel::orderBy('nombre_nivel')->get(),
 
-            'grados' => GradoArea::orderBy('nombre_grado')->get(),
+            'grados' => GradoArea::with('nivel')
+                ->orderBy('nombre_grado')
+                ->get(),
 
             'secciones' => Seccion::orderBy('nombre_seccion')->get(),
         ];
@@ -117,33 +195,36 @@ class MatriculaController extends Controller
 
     public function tabGrupos(Request $request): View
     {
-        $estudiantes = Estudiante::query()
+        $gruposPadre = PadreGrupo::query()
+
             ->when($request->filled('periodo_id'), function ($q) use ($request) {
-                $q->whereHas(
-                    'matriculas.grupo',
-                    fn($g) =>
-                    $g->where('periodo_id', $request->periodo_id)
-                );
+                $q->where('periodo_id', $request->periodo_id);
             })
+
             ->when($request->filled('grado_id'), function ($q) use ($request) {
-                $q->whereHas(
-                    'matriculas.grupo',
-                    fn($g) =>
-                    $g->where('grado_id', $request->grado_id)
-                );
+                $q->where('grado_id', $request->grado_id);
             })
+
             ->when($request->filled('seccion_id'), function ($q) use ($request) {
-                $q->whereHas(
-                    'matriculas.grupo',
-                    fn($g) =>
-                    $g->where('seccion_id', $request->seccion_id)
-                );
+                $q->where('seccion_id', $request->seccion_id);
             })
+
+            ->with([
+                'periodo',
+                'grado.nivel',
+                'seccion',
+                'grupos',
+            ])
+
+            ->orderBy('grado_id')
+            ->orderBy('seccion_id')
+
             ->paginate(15)
             ->withQueryString();
 
         return view('matriculas.partials.grupos', [
-            'estudiantes' => $estudiantes,
+            'gruposPadre' => $gruposPadre,
+
             'periodos' => Periodo::orderBy('nombre_periodo')->get(),
             'grados' => GradoArea::orderBy('nombre_grado')->get(),
             'secciones' => Seccion::orderBy('nombre_seccion')->get(),

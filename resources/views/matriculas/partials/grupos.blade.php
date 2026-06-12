@@ -30,9 +30,9 @@
                             </option>
 
                             @foreach($periodos as $periodo)
-                                <option value="{{ $periodo->id }}">
-                                    {{ $periodo->nombre_periodo }}
-                                </option>
+                            <option value="{{ $periodo->id }}">
+                                {{ $periodo->nombre_periodo }}
+                            </option>
                             @endforeach
 
                         </select>
@@ -52,9 +52,9 @@
                             </option>
 
                             @foreach($niveles as $nivel)
-                                <option value="{{ $nivel->id }}">
-                                    {{ $nivel->nombre_nivel }}
-                                </option>
+                            <option value="{{ $nivel->id }}">
+                                {{ $nivel->nombre_nivel }}
+                            </option>
                             @endforeach
 
                         </select>
@@ -76,68 +76,61 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold uppercase mb-2">
-                            Sección
-                        </label>
-
-                        <select
-                            name="seccion_id"
-                            class="w-full border-2 border-[#0A1718] px-3 py-2">
-
-                            <option value="">
-                                Seleccione sección
-                            </option>
-
-                        </select>
-                    </div>
 
                 </div>
 
                 {{-- tabla --}}
-                <div class="overflow-x-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
 
-                    <table class="w-full border-collapse">
+                    @forelse($gruposPadre as $grupo)
 
-                        <thead>
-                            <tr>
-                                <th>DNI</th>
-                                <th>Nombres</th>
-                                <th>Apellidos</th>
-                                <th>Email</th>
-                            </tr>
-                        </thead>
+                    <div class="border-2 border-[#0A1718] bg-white p-4">
 
-                        <tbody>
+                        <h3 class="font-bold text-lg">
+                            GRUPO {{ $grupo->seccion->nombre_seccion }}
+                        </h3>
 
-                            @forelse($estudiantes as $estudiante)
+                        
+                       
 
-                                <tr>
-                                    <td>{{ $estudiante->dni }}</td>
-                                    <td>{{ $estudiante->nombres }}</td>
-                                    <td>{{ $estudiante->apellidos }}</td>
-                                    <td>{{ $estudiante->email }}</td>
-                                </tr>
 
-                            @empty
+                        <div class="mt-4 border-t pt-3">
 
-                                <tr>
-                                    <td colspan="4" class="text-center py-4">
-                                        No hay estudiantes matriculados.
-                                    </td>
-                                </tr>
+                         <p class="text-xs uppercase text-gray-500">
+                            N° alumnos  {{ $grupo->matriculas_count }}
+                        </p>
+                            <div class="mt-4 border-t pt-3">
 
-                            @endforelse
+                                <div class="flex items-center justify-between">
+                       
 
-                        </tbody>
+                                    <button
+                                        type="button"
+                                        class="px-3 py-2 text-sm border-2 border-[#0A1718] hover:bg-[#0A1718] hover:text-white">
 
-                    </table>
+                                        Ver alumnos
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    @empty
+
+                    <div class="col-span-full text-center py-8">
+
+                        No hay grupos registrados.
+
+                    </div>
+
+                    @endforelse
 
                 </div>
 
-                <div class="border-t px-5 py-4">
-                    {{ $estudiantes->links() }}
-                </div>
 
             </section>
 

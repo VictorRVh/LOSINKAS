@@ -1,77 +1,110 @@
-<div class="space-y-4">
+<div class="grid md:grid-cols-4 gap-4">
 
-    <div class="grid md:grid-cols-3 gap-4">
+    {{-- PERIODO --}}
+    <div>
+        <label class="label">Periodo</label>
 
-        <div>
-            <label class="label">Periodo</label>
+        <select
+            name="periodo_id"
+            x-model="selectedPeriodo"
+            class="input">
 
-            <select
-                x-model="selectedPeriodo"
-                class="input">
+            <option value="">Seleccione</option>
 
-                <option value="">Seleccione</option>
+            @foreach($periodos as $periodo)
+            <option value="{{ $periodo->id }}">
+                {{ $periodo->nombre_periodo }}
+            </option>
+            @endforeach
 
-                @foreach($periodos as $periodo)
-                    <option value="{{ $periodo->id }}">
-                        {{ $periodo->nombre_periodo }}
-                    </option>
-                @endforeach
-
-            </select>
-        </div>
-
-        <div>
-            <label class="label">Grado</label>
-
-            <select
-                x-model="selectedGrado"
-                class="input">
-
-                @foreach($grados as $grado)
-                    <option value="{{ $grado->id }}">
-                        {{ $grado->nombre_grado }}
-                    </option>
-                @endforeach
-
-            </select>
-        </div>
-
-        <div>
-            <label class="label">Sección</label>
-
-            <select
-                x-model="selectedSeccion"
-                class="input">
-
-                @foreach($secciones as $seccion)
-                    <option value="{{ $seccion->id }}">
-                        {{ $seccion->nombre_seccion }}
-                    </option>
-                @endforeach
-
-            </select>
-        </div>
-
+        </select>
     </div>
 
-    <div class="border p-4">
+    {{-- NIVEL --}}
+    <div>
+        <label class="label">Nivel</label>
 
-        <template x-for="g in gruposFiltrados()">
+        <select
+            name="nivel_id"
+            x-model="selectedNivel"
+            class="input">
 
-            <label class="flex gap-2">
+            <option value="">Seleccione</option>
 
-                <input
-                    type="checkbox"
-                    name="grupo_ids[]"
-                    :value="g.id"
-                    x-model="gruposSeleccionados">
+            @foreach($niveles as $nivel)
+            <option value="{{ $nivel->id }}">
+                {{ $nivel->nombre_nivel }}
+            </option>
+            @endforeach
 
-                <span x-text="g.nombre_grupo"></span>
-
-            </label>
-
-        </template>
-
+        </select>
     </div>
+
+    {{-- GRADO --}}
+    <div>
+        <label class="label">Grado</label>
+
+        <select
+            name="grado_id"
+            x-model="selectedGrado"
+            class="input">
+
+            <option value="">Seleccione</option>
+
+            <template
+                x-for="grado in gradosDisponibles()"
+                :key="grado.id">
+
+                <option
+                    :value="grado.id"
+                    x-text="grado.nombre_grado">
+                </option>
+
+            </template>
+
+        </select>
+    </div>
+
+    {{-- SECCION --}}
+    <div>
+        <label class="label">Sección</label>
+
+        <select
+            name="seccion_id"
+            x-model="selectedSeccion"
+            class="input">
+
+            <option value="">Seleccione</option>
+
+            <template
+                x-for="seccion in seccionesDisponibles()"
+                :key="seccion.id">
+
+                <option
+                    :value="seccion.id"
+                    x-text="seccion.nombre_seccion">
+                </option>
+
+            </template>
+
+        </select>
+    </div>
+
+</div>
+<div class="border rounded p-4 mt-4">
+
+    <h3 class="font-semibold mb-2">
+        Cursos de la sección
+    </h3>
+
+    <template
+        x-for="g in gruposFiltrados()"
+        :key="g.id">
+
+        <div class="py-1">
+            • <span x-text="g.nombre_grupo"></span>
+        </div>
+
+    </template>
 
 </div>

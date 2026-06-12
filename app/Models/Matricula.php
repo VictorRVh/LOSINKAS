@@ -17,7 +17,7 @@ class Matricula extends Pivot
 
     protected $fillable = [
         'estudiante_id',
-        'grupo_id',
+        'aula_id',
         'fecha_matricula',
         'estado',
     ];
