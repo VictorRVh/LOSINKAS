@@ -117,6 +117,24 @@ class MatriculaController extends Controller
             ->route('matriculas.index')
             ->with('status', 'Matrícula actualizada correctamente.');
     }
+    public function seccionesPorGrado(Request $request)
+    {
+        $secciones = Seccion::query()
+            ->whereIn(
+                'id',
+                PadreGrupo::query()
+                    ->where('grado_id', $request->grado_id)
+                    ->where('periodo_id', $request->periodo_id)
+                    ->pluck('seccion_id')
+            )
+            ->orderBy('nombre_seccion')
+            ->get();
+
+        return view(
+            'matriculas.partials.secciones',
+            compact('secciones')
+        );
+    }
 
     private function sharedData(): array
     {

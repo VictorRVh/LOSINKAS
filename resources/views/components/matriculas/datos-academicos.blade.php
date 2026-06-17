@@ -46,21 +46,20 @@
 
         <select
             name="grado_id"
-            x-model="selectedGrado"
-            class="input">
+            class="input"
+
+            hx-get="{{ route('matriculas.secciones-por-grado') }}"
+            hx-trigger="change"
+            hx-target="#seccion-container"
+            hx-include="[name='grado_id'], [name='periodo_id']">
 
             <option value="">Seleccione</option>
 
-            <template
-                x-for="grado in gradosDisponibles()"
-                :key="grado.id">
-
-                <option
-                    :value="grado.id"
-                    x-text="grado.nombre_grado">
-                </option>
-
-            </template>
+            @foreach($grados as $grado)
+            <option value="{{ $grado->id }}">
+                {{ $grado->nombre_grado }}
+            </option>
+            @endforeach
 
         </select>
     </div>
@@ -68,24 +67,17 @@
     {{-- SECCION --}}
     <div>
         <label class="label">Sección</label>
-
         <select
             name="seccion_id"
-            x-model="selectedSeccion"
             class="input">
 
             <option value="">Seleccione</option>
 
-            <template
-                x-for="seccion in seccionesDisponibles()"
-                :key="seccion.id">
-
-                <option
-                    :value="seccion.id"
-                    x-text="seccion.nombre_seccion">
-                </option>
-
-            </template>
+            @foreach($secciones as $seccion)
+            <option value="{{ $seccion->id }}">
+                {{ $seccion->nombre_seccion }}
+            </option>
+            @endforeach
 
         </select>
     </div>

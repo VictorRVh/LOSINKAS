@@ -49,6 +49,11 @@ Route::middleware('auth')->group(function () {
         ->name('grado-areas.destroy');
 
     Route::get(
+        '/matriculas/secciones',
+        [MatriculaController::class, 'seccionesPorGrado']
+    )->name('matriculas.secciones-por-grado');
+
+    Route::get(
         '/niveles/{nivel}/grado-options',
         [GradoAreaController::class, 'optionsByNivel']
     )->name('niveles.grado-options');
