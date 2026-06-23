@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('descripcion')->nullable();
             $table->boolean('activo')->default(true);
 
-            $table->foreignId('grado_area_id')->constrained('grado_areas')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('grado_id')->constrained('grados')->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->timestamps();
         });

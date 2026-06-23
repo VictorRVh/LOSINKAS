@@ -15,7 +15,7 @@ class Curso extends Model
     protected $table = 'cursos';
 
     protected $fillable = [
-        'grado_area_id',
+        'grado_id',
         'nombre_curso',
         'descripcion',
         'activo',
@@ -25,9 +25,9 @@ class Curso extends Model
         'activo' => 'boolean',
     ];
 
-    public function gradoArea(): BelongsTo
+    public function grado(): BelongsTo
     {
-        return $this->belongsTo(GradoArea::class);
+        return $this->belongsTo(Grado::class);
     }
 
     public function ajusteExamenes(): HasMany

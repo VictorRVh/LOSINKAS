@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Estudiante;
-use App\Models\GradoArea;
+use App\Models\Grado;
 use App\Models\Grupo;
 use App\Models\Matricula;
 use App\Models\Nivel;
@@ -182,7 +182,7 @@ class MatriculaController extends Controller
 
             'niveles' => Nivel::orderBy('nombre_nivel')->get(),
 
-            'grados' => GradoArea::with('nivel')
+            'grados' => Grado::with('nivel')
                 ->orderBy('nombre_grado')
                 ->get(),
 
@@ -244,7 +244,7 @@ class MatriculaController extends Controller
             'gruposPadre' => $gruposPadre,
 
             'periodos' => Periodo::orderBy('nombre_periodo')->get(),
-            'grados' => GradoArea::orderBy('nombre_grado')->get(),
+            'grados' => Grado::orderBy('nombre_grado')->get(),
             'secciones' => Seccion::orderBy('nombre_seccion')->get(),
             'niveles' => Nivel::orderBy('nombre_nivel')->get(),
         ]);

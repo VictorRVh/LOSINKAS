@@ -32,7 +32,7 @@ class PadreGrupo extends Model
 
     public function grado(): BelongsTo
     {
-        return $this->belongsTo(GradoArea::class, 'grado_id');
+        return $this->belongsTo(Grado::class, 'grado_id');
     }
 
     public function seccion(): BelongsTo
@@ -50,13 +50,5 @@ class PadreGrupo extends Model
         return $this->hasMany(Grupo::class, 'padre_id');
     }
 
-    // public function estudiantes(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Estudiante::class, 'matriculas')
-    //         ->using(Matricula::class)
-    //         // ->withPivot(['id', 'fecha_matricula'])
-    //         ->withPivot(['id'])
-    //         ->withTimestamps();
-    // }
 
 }

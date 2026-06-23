@@ -22,8 +22,8 @@ class Nivel extends Model
         'activo' => 'boolean',
     ];
 
-    public function gradoAreas(): HasMany
+    public function grado(): HasMany
     {
-        return $this->hasMany(GradoArea::class);
+        return $this->hasMany(Grado::class);
     }
 }

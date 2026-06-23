@@ -12,7 +12,7 @@ class ExamenController extends Controller
     public function index(Request $request): JsonResponse
     {
         $examenes = Examen::query()
-            ->with(['gradoArea', 'cursoExamenes'])
+            ->with(['grado', 'cursoExamenes'])
             ->when($request->filled('grado_area_id'), fn($query) => $query->where('grado_area_id', $request->integer('grado_area_id')))
             ->when($request->filled('buscar'), function ($query) use ($request) {
                 $buscar = $request->string('buscar');
@@ -44,12 +44,12 @@ class ExamenController extends Controller
 
         $examen = Examen::create($validated);
 
-        return response()->json($examen->load(['gradoArea', 'cursoExamenes']), 201);
+        return response()->json($examen->load(['grado', 'cursoExamenes']), 201);
     }
 
     public function show(Examen $examen): JsonResponse
     {
-        return response()->json($examen->load(['gradoArea', 'cursoExamenes']));
+        return response()->json($examen->load(['grado', 'cursoExamenes']));
     }
 
     public function update(Request $request, Examen $examen): JsonResponse
@@ -66,7 +66,7 @@ class ExamenController extends Controller
 
         $examen->update($validated);
 
-        return response()->json($examen->load(['gradoArea', 'cursoExamenes']));
+        return response()->json($examen->load(['grado', 'cursoExamenes']));
     }
 
     public function destroy(Examen $examen): JsonResponse

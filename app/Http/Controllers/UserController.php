@@ -9,31 +9,54 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
+use Inertia\Inertia;
+use Inertia\Response;
+
 class UserController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $usuarios = User::latest()->paginate(10);
-
-        return view('users.usuarios', compact('usuarios'));
+        return Inertia::render('Users/Index', [
+            'usuarios' => User::latest()->paginate(10),
+        ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => bcrypt($validated['password']),
         ]);
 
-        return redirect()
-            ->route('users.index')
-            ->with('status', 'Usuario creado correctamente.');
+        return redirect()->back()->with('success', 'Usuario creado');
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email,' . $user->id],
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        return redirect()->back()->with('success', 'Usuario actualizado');
+    }
+
+    public function destroy(User $user)
+    {
+        $user->delete();
+
+        return redirect()->back()->with('success', 'Usuario eliminado');
     }
 }

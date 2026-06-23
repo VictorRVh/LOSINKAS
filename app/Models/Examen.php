@@ -20,7 +20,7 @@ class Examen extends Model
         'descripcion',
         'fecha_examen',
         'clave_respuestas',
-        'grado_area_id',
+        'grado_id',
         'activo',
     ];
 
@@ -30,9 +30,9 @@ class Examen extends Model
         'activo' => 'boolean',
     ];
 
-    public function gradoArea(): BelongsTo
+    public function grado(): BelongsTo
     {
-        return $this->belongsTo(GradoArea::class);
+        return $this->belongsTo(Grado::class);
     }
 
     public function cursoExamenes(): HasMany
